@@ -49,14 +49,14 @@ export const register = (req, res) => {
 						}
 					})
 					.catch(err => {
-						console.log(err.message);
+						console.log(err);
 					});
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
 	}
 };
 
@@ -89,10 +89,10 @@ export const login = (req, res) => {
 				}
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
 	}
 };
 
@@ -105,20 +105,20 @@ export const setAdmin = (req, res) => {
 				});
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
 	}
 };
 
-export const updateUserDetails = async (req, res) => {
+export const updateUserInfo = async (req, res) => {
 	try {
 		const foundUser = await User.findOne({ _id: req.user.id });
 
 		const { firstName, lastName, mobileNo } = req.body;
 
-		const updatedUserDetails = {
+		const updatedUserInfo = {
 			firstName: firstName ? firstName : foundUser.firstName,
 			lastName: lastName ? lastName : foundUser.lastName,
 			mobileNo: mobileNo ? mobileNo : foundUser.mobileNo,
@@ -137,17 +137,17 @@ export const updateUserDetails = async (req, res) => {
 			},
 		};
 
-		User.findByIdAndUpdate(req.user.id, updatedUserDetails, { new: true })
+		User.findByIdAndUpdate(req.user.id, updatedUserInfo, { new: true })
 			.then(() => {
 				return res.send({
-					message: 'Your details were updated successfully.',
+					message: 'Your info was updated successfully.',
 					updates: updates,
 				});
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
 	}
 };

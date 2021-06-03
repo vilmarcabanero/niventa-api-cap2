@@ -14,10 +14,10 @@ export const getActiveProducts = (req, res) => {
 				return res.send(products);
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
 	}
 };
 
@@ -29,12 +29,12 @@ export const getSingleProduct = (req, res) => {
 				return res.send(product);
 			})
 			.catch(err => {
-				console.log(err.message);
-				res.status(400).send(err.message);
+				console.log(err);
+				res.status(400).send(err);
 			});
 	} catch (err) {
-		console.log(err.message);
-		res.status(400).send(err.message);
+		console.log(err);
+		res.status(400).send(err);
 	}
 };
 
@@ -73,13 +73,53 @@ export const createSingleProduct = (req, res) => {
 						}
 					})
 					.catch(err => {
-						console.log(err.message);
+						console.log(err);
 					});
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
+	}
+};
+
+export const updateProductInfo = async (req, res) => {
+	try {
+		const foundProduct = await Product.findOne({ _id: req.params.id });
+
+		const { name, description, price } = req.body;
+
+		const updatedProductInfo = {
+			name: name ? name : foundProduct.name,
+			description: description ? description : foundProduct.description,
+			price: price ? price : foundProduct.price,
+		};
+
+		const updates = {
+			previous: {
+				name: foundProduct.name,
+				description: foundProduct.description,
+				price: foundProduct.price,
+			},
+			current: {
+				name: name ? name : foundProduct.name,
+				description: description ? description : foundProduct.description,
+				price: price ? price : foundProduct.price,
+			},
+		};
+
+		Product.findByIdAndUpdate(req.params.id, updatedProductInfo, { new: true })
+			.then(() => {
+				return res.send({
+					message: 'Product info was updated successfully.',
+					updates: updates,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
 	}
 };
