@@ -4,8 +4,10 @@ import * as auth from '../middlewares/auth.js';
 
 export const register = (req, res) => {
 	try {
-		let userByEmail = { email: req.body.email };
-		const { password, confirmPassword } = req.body;
+		const { firstName, lastName, email, mobileNo, password, confirmPassword } =
+			req.body;
+
+		let userByEmail = { email: email };
 
 		User.findOne(userByEmail)
 			.then(user => {
@@ -26,7 +28,7 @@ export const register = (req, res) => {
 				const newUser = new User({
 					firstName: firstName,
 					lastName: lastName,
-					email: req.body.email,
+					email: email,
 					password: hashedPw,
 					isAdmin: false,
 					mobileNo: mobileNo,
@@ -34,7 +36,7 @@ export const register = (req, res) => {
 
 				const _newUser = {
 					name: newUser.fullName,
-					email: req.body.email,
+					email: email,
 					mobileNo: mobileNo,
 				};
 
@@ -62,7 +64,8 @@ export const register = (req, res) => {
 
 export const login = (req, res) => {
 	try {
-		let userByEmail = { email: req.body.email };
+		const { email } = req.body;
+		let userByEmail = { email: email };
 
 		User.findOne(userByEmail)
 			.then(user => {

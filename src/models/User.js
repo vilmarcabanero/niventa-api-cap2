@@ -26,6 +26,38 @@ const UserSchema = new mongoose.Schema(
 			type: String,
 			required: [true, 'Please provide a mobile number.'],
 		},
+		orders: [
+			{
+				totalAmount: {
+					type: String,
+					required: true,
+				},
+				purchasedOn: {
+					type: Date,
+					default: new Date(),
+				},
+				customerId: {
+					type: String,
+					required: true,
+				},
+				items: [
+					{
+						productId: {
+							type: String,
+							required: true,
+						},
+						subTotal: {
+							type: Number,
+							required: true,
+						},
+						purchasedQty: {
+							type: Number,
+							required: true,
+						},
+					},
+				],
+			},
+		],
 	},
 	{
 		timestamps: true,
