@@ -10,13 +10,13 @@ export const register = (req, res) => {
 		User.findOne(userByEmail)
 			.then(user => {
 				if (user) {
-					return res.status(401).send({
+					return res.status(400).send({
 						message: `${userByEmail.email} is already registered.`,
 					});
 				}
 
 				if (password !== confirmPassword) {
-					return res.status(401).send({
+					return res.status(400).send({
 						message: `Passwords do not match.`,
 					});
 				}
@@ -67,7 +67,7 @@ export const login = (req, res) => {
 		User.findOne(userByEmail)
 			.then(user => {
 				if (!user) {
-					return res.status(401).send({
+					return res.status(400).send({
 						message: `${userByEmail.email} is not yet registered.`,
 					});
 				}
@@ -85,7 +85,7 @@ export const login = (req, res) => {
 						message: `${user.fullName} was logged in successfully.`,
 					});
 				} else {
-					return res.status(401).send({ message: 'Invalid password' });
+					return res.status(400).send({ message: 'Invalid password' });
 				}
 			})
 			.catch(err => {

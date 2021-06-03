@@ -19,9 +19,11 @@ export const verify = (req, res, next) => {
 	if (token) {
 		token = token.slice(7, token.length);
 
-		jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+		jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
 			if (err) {
-				return res.send({ auth: 'Invalid verification of token or secret.' });
+				return res
+					.status(401)
+					.send({ auth: 'Invalid verification of token and secret.' });
 			} else {
 				console.log(decoded);
 				req.user = decoded;
@@ -29,7 +31,9 @@ export const verify = (req, res, next) => {
 			}
 		});
 	} else {
-		return res.send({ auth: 'Please log in.' });
+		return res
+			.status(401)
+			.send({ auth: 'Only logged in users can access this route.' });
 	}
 };
 
@@ -38,6 +42,6 @@ export const verifyAdmin = (req, res, next) => {
 	if (req.user.isAdmin) {
 		next();
 	} else {
-		res.send({ auth: 'Only admin user can access this route.' });
+		res.status(401).send({ auth: 'Only admin users can access this route.' });
 	}
 };
