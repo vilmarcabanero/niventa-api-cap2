@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-const secret = 'CourseBookingAPI';
 
 export const createAccessToken = user => {
 	const data = {
@@ -8,33 +7,37 @@ export const createAccessToken = user => {
 		isAdmin: user.isAdmin,
 	};
 
-	return jwt.sign(data, secret, {});
+	return jwt.sign(data, process.env.JWT_SECRET, {
+		expiresIn: process.env.JWT_TOKEN_EXPIRE,
+	});
 };
 
 export const verify = (req, res, next) => {
 	let token = req.headers.authorization;
+	console.log(token);
 
 	if (token) {
 		token = token.slice(7, token.length);
 
-		jwt.verify(token, secret, function (err, decoded) {
+		jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
 			if (err) {
-				res.send({ auth: 'failed' });
+				return res.send({ auth: 'Invalid verification of token or secret.' });
 			} else {
-				// console.log(decoded);
+				console.log(decoded);
 				req.user = decoded;
 				next();
 			}
 		});
 	} else {
-		res.send({ auth: 'failed' });
+		return res.send({ auth: 'Please log in.' });
 	}
 };
 
 export const verifyAdmin = (req, res, next) => {
+	console.log(req.user);
 	if (req.user.isAdmin) {
 		next();
 	} else {
-		res.send({ auth: 'failed' });
+		res.send({ auth: 'Only admin user can access this route.' });
 	}
 };
