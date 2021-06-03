@@ -68,7 +68,8 @@ export const createSingleProduct = (req, res) => {
 						if (user) {
 							return res.send({
 								message: 'Product created successfully.',
-								product: _newProduct,
+								soldBy: req.user.fullName,
+								details: _newProduct,
 							});
 						}
 					})
@@ -114,6 +115,25 @@ export const updateProductInfo = async (req, res) => {
 				return res.send({
 					message: 'Product info was updated successfully.',
 					updates: updates,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const archiveProduct = async (req, res) => {
+	try {
+		const foundProduct = await Product.findOne({ _id: req.params.id });
+
+		Product.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true })
+			.then(product => {
+				return res.send({
+					message: `${foundProduct.name} was archived successfully.`,
+					details: product,
 				});
 			})
 			.catch(err => {

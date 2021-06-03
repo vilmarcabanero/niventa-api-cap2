@@ -16,6 +16,6 @@ router.post(
 	p.createSingleProduct
 );
 
-router.put('/update/:id', mAuth.verify, mAuth.verifyAdmin, p.updateProductInfo)
-
+router.put('/update/:id', mAuth.verify, mAuth.verifyAdmin, p.updateProductInfo);
+router.put('/archive/:id', mAuth.verify, mAuth.verifyAdmin, p.archiveProduct);
 export default router;

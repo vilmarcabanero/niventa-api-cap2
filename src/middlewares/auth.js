@@ -4,6 +4,7 @@ export const createAccessToken = user => {
 	const data = {
 		id: user._id,
 		email: user.email,
+		fullName: user.fullName,
 		isAdmin: user.isAdmin,
 	};
 
@@ -25,6 +26,7 @@ export const verify = (req, res, next) => {
 					.send({ auth: 'Invalid verification of token and secret.' });
 			} else {
 				req.user = decoded;
+				console.log(req.user);
 				next();
 			}
 		});
