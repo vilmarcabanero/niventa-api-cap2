@@ -21,6 +21,7 @@ router.post(
 
 router.post('/login', v.validateLoginRequest, v.isRequestValidated, auth.login);
 
-router.put('/setadmin/:id', mAuth.verify, mAuth.verifyAdmin, auth.setAdmin); //Need pa irestrict to admin only, nagka bug yung code ko. Auth failed kahit admin ang mag access sa route.
+router.put('/setadmin/:id', mAuth.verify, mAuth.verifyAdmin, auth.setAdmin);
+router.put('/update', mAuth.verify, auth.updateUserDetails);
 
 export default router;

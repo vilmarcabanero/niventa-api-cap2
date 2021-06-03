@@ -24,18 +24,18 @@ export const register = (req, res) => {
 				const hashedPw = bcrypt.hashSync(password, 10);
 
 				const newUser = new User({
-					firstName: req.body.firstName,
-					lastName: req.body.lastName,
+					firstName: firstName,
+					lastName: lastName,
 					email: req.body.email,
 					password: hashedPw,
 					isAdmin: false,
-					mobileNo: req.body.mobileNo,
+					mobileNo: mobileNo,
 				});
 
 				const _newUser = {
 					name: newUser.fullName,
 					email: req.body.email,
-					mobileNo: req.body.mobileNo,
+					mobileNo: mobileNo,
 				};
 
 				newUser
@@ -102,6 +102,46 @@ export const setAdmin = (req, res) => {
 			.then(user => {
 				return res.send({
 					message: `${user.fullName} was successfully set as admin.`,
+				});
+			})
+			.catch(err => {
+				console.log(err.message);
+			});
+	} catch (err) {
+		console.log(err.message);
+	}
+};
+
+export const updateUserDetails = async (req, res) => {
+	try {
+		const foundUser = await User.findOne({ _id: req.user.id });
+
+		const { firstName, lastName, mobileNo } = req.body;
+
+		const updatedUserDetails = {
+			firstName: firstName ? firstName : foundUser.firstName,
+			lastName: lastName ? lastName : foundUser.lastName,
+			mobileNo: mobileNo ? mobileNo : foundUser.mobileNo,
+		};
+
+		const updates = {
+			previous: {
+				firstName: foundUser.firstName,
+				lastName: foundUser.lastName,
+				mobileNo: foundUser.mobileNo,
+			},
+			current: {
+				firstName: firstName ? firstName : foundUser.firstName,
+				lastName: lastName ? lastName : foundUser.lastName,
+				mobileNo: mobileNo ? mobileNo : foundUser.mobileNo,
+			},
+		};
+
+		User.findByIdAndUpdate(req.user.id, updatedUserDetails, { new: true })
+			.then(() => {
+				return res.send({
+					message: 'Your details were updated successfully.',
+					updates: updates,
 				});
 			})
 			.catch(err => {

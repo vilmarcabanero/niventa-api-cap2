@@ -14,7 +14,6 @@ export const createAccessToken = user => {
 
 export const verify = (req, res, next) => {
 	let token = req.headers.authorization;
-	console.log(token);
 
 	if (token) {
 		token = token.slice(7, token.length);
@@ -25,7 +24,6 @@ export const verify = (req, res, next) => {
 					.status(401)
 					.send({ auth: 'Invalid verification of token and secret.' });
 			} else {
-				console.log(decoded);
 				req.user = decoded;
 				next();
 			}
@@ -38,7 +36,6 @@ export const verify = (req, res, next) => {
 };
 
 export const verifyAdmin = (req, res, next) => {
-	console.log(req.user);
 	if (req.user.isAdmin) {
 		next();
 	} else {
