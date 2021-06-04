@@ -44,7 +44,7 @@ export const createOrderOld = (req, res) => {
 					return res.status(400).send({
 						message: `Not enough stocks. You order ${purchasedQty} pieces but the current stock has ${
 							foundProduct.quantity
-						} ${foundProduct.quantity === 1 ? 'piece' : 'pieces'}`,
+						} ${foundProduct.quantity <= 1 ? 'piece' : 'pieces'}`,
 					});
 				}
 				res.send({ message: 'You created an order successfully.' });
@@ -104,7 +104,7 @@ export const createOrderV1 = (req, res) => {
 								return res.status(400).send({
 									message: `Not enough stocks. You order ${purchasedQty} pieces but the current stock has ${
 										product.quantity
-									} ${product.quantity === 1 ? 'piece' : 'pieces'}`,
+									} ${product.quantity <= 1 ? 'piece' : 'pieces'}`,
 								});
 							}
 							// res.send({ message: 'You created an order successfully.' });
@@ -161,12 +161,21 @@ export const createOrder = (req, res) => {
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
 						.then(product => {
-							
 							const itemPrice = product.price;
 							const purchasedQty = productPurchasedQties[index];
 							const subTotal = itemPrice * purchasedQty;
 
 							totalAmount += subTotal;
+
+							if (purchasedQty > product.quantity) {
+								return res.status(400).send({
+									message: `Not enough stocks. You order ${purchasedQty} ${
+										product.quantity <= 1 ? 'piece' : 'pieces'
+									} but the current stock has ${product.quantity} ${
+										product.quantity <= 1 ? 'piece' : 'pieces'
+									}.`,
+								});
+							}
 
 							const orderedProduct = {
 								productId: product._id,
@@ -179,6 +188,15 @@ export const createOrder = (req, res) => {
 							newOrder.items.push(orderedProduct);
 							newOrder.totalAmount = totalAmount;
 
+							product.quantity -= purchasedQty;
+
+							if (product.quantity > 0) {
+								product.save();
+							} else {
+								product.isActive = false;
+								product.save();
+							}
+
 							if (index === productIds.length - 1) {
 								// console.log('Total amount: ', totalAmount);
 								// console.log(newOrder);
@@ -186,9 +204,11 @@ export const createOrder = (req, res) => {
 								foundUser.orders.push(newOrder);
 								foundUser.save();
 
-								console.log(foundUser.orders[foundUser.orders.length - 1]._id);
+								// console.log(foundUser.orders[foundUser.orders.length - 1]._id);
+
 								return res.send({
 									message: 'You created an order successfully.',
+									details: newOrder,
 								});
 							}
 						})
@@ -221,7 +241,7 @@ export const getMyOrders = (req, res) => {
 						return {
 							item: index + 1,
 							details: `${purchasedQty} ${
-								purchasedQty === 1 ? 'piece' : 'pieces'
+								purchasedQty <= 1 ? 'piece' : 'pieces'
 							} ${productName} for ${subTotal} pesos.`,
 						};
 					});
