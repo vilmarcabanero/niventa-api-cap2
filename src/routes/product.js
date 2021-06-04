@@ -5,6 +5,7 @@ import * as v from '../middlewares/validators.js';
 import * as mAuth from '../middlewares/auth.js';
 
 router.get('/active', p.getActiveProducts);
+router.get('/price/:price', p.getProductsByPrice);
 router.get('/:id', p.getSingleProduct);
 
 router.post(

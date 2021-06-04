@@ -31,4 +31,5 @@ export const validateCreateProductRequest = [
 		.notEmpty()
 		.withMessage('Product description is required.'),
 	check('price').notEmpty().withMessage('Product price is required.'),
+	check('quantity').notEmpty().withMessage('Quantity is required.'),
 ];

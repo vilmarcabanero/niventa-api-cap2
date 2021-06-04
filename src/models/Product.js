@@ -13,6 +13,14 @@ const ProductSchema = new mongoose.Schema({
 		type: Number,
 		required: [true, 'Please provide the product price.'],
 	},
+	quantity: {
+		type: Number,
+		required: true,
+	},
+	seller: {
+		type: String,
+		required: true,
+	},
 	isActive: {
 		type: Boolean,
 		default: true,

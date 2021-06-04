@@ -21,6 +21,26 @@ export const getActiveProducts = (req, res) => {
 	}
 };
 
+export const getProductsByPrice = (req, res) => {
+	try {
+		Product.find({ price: req.params.price })
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: `There are no products with price of ${req.params.price}.`,
+					});
+				}
+
+				return res.send(products);
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 export const getSingleProduct = (req, res) => {
 	try {
 		const id = mongoose.Types.ObjectId(req.params.id);
@@ -54,12 +74,15 @@ export const createSingleProduct = (req, res) => {
 					name: req.body.name,
 					description: req.body.description,
 					price: req.body.price,
+					quantity: req.body.quantity,
+					seller: req.user.fullName,
 				});
 
 				const _newProduct = {
 					name: req.body.name,
 					description: req.body.description,
 					price: req.body.price,
+					quantity: req.body.quantity,
 				};
 
 				newProduct
@@ -68,7 +91,7 @@ export const createSingleProduct = (req, res) => {
 						if (user) {
 							return res.send({
 								message: 'Product created successfully.',
-								soldBy: req.user.fullName,
+								seller: req.user.fullName,
 								details: _newProduct,
 							});
 						}
