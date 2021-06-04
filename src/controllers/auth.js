@@ -66,8 +66,7 @@ export const register = (req, res) => {
 
 export const login = (req, res) => {
 	try {
-		const { email } = req.body;
-		let userByEmail = { email: email };
+		let userByEmail = { email: req.body.email };
 
 		User.findOne(userByEmail)
 			.then(user => {

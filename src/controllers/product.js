@@ -12,13 +12,52 @@ export const getActiveProducts = (req, res) => {
 				}
 
 				const productSummary = products.map(product => {
-					const quantity = product.quantity;
-					const name = product.name;
-					const price = product.price;
 					return {
-						name: name,
-						price: price,
-						stock: quantity,
+						name: product.name,
+						price: product.price,
+						stock: product.quantity,
+						seller: product.seller
+					};
+				});
+
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+
+				return res.send({
+					message: `Here is the list of active products.`,
+					summary: details,
+					products: products,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getInactiveProducts = (req, res) => {
+	try {
+		Product.find({ isActive: false })
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: 'There are no active products.',
+					});
+				}
+
+				const productSummary = products.map(product => {
+					return {
+						name: product.name,
+						price: product.price,
+						stock: product.quantity,
+						seller: product.seller
 					};
 				});
 

@@ -20,6 +20,12 @@ router.post(
 );
 
 router.post('/login', v.validateLoginRequest, v.isRequestValidated, auth.login);
+router.post(
+	'/admin/login',
+	v.validateLoginRequest,
+	v.isRequestValidated,
+	adminUser.login
+);
 
 router.put('/setadmin/:id', mAuth.verify, mAuth.verifyAdmin, auth.setAdmin);
 router.put('/update', mAuth.verify, auth.updateUserInfo);

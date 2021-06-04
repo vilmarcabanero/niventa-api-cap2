@@ -161,6 +161,7 @@ export const createOrder = (req, res) => {
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
 						.then(product => {
+							
 							const itemPrice = product.price;
 							const purchasedQty = productPurchasedQties[index];
 							const subTotal = itemPrice * purchasedQty;
