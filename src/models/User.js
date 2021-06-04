@@ -4,16 +4,20 @@ const UserSchema = new mongoose.Schema(
 	{
 		firstName: {
 			type: String,
-			required: [true, 'Please provide a first name.'],
+			required: true,
 		},
 		lastName: {
 			type: String,
-			required: [true, 'Please provide a last name.'],
+			required: true,
+		},
+		username: {
+			type: String,
+			required: true,
 		},
 		email: {
 			type: String,
 			unique: true,
-			required: [true, 'Please provide a last name.'],
+			required: true,
 		},
 		password: {
 			type: String,
@@ -24,7 +28,7 @@ const UserSchema = new mongoose.Schema(
 		},
 		mobileNo: {
 			type: String,
-			required: [true, 'Please provide a mobile number.'],
+			required: true,
 		},
 		orders: [
 			{
@@ -67,5 +71,6 @@ const UserSchema = new mongoose.Schema(
 UserSchema.virtual('fullName').get(function () {
 	return `${this.firstName} ${this.lastName}`;
 });
+
 
 export default mongoose.model('User', UserSchema);

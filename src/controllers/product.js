@@ -43,7 +43,7 @@ export const getProductsByPrice = (req, res) => {
 
 export const getMyProducts = (req, res) => {
 	try {
-		Product.find({ seller: req.user.fullName })
+		Product.find({ seller: req.user.username })
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
@@ -79,6 +79,43 @@ export const getMyProducts = (req, res) => {
 	}
 };
 
+export const getProductsBySeller = (req, res) => {
+	try {
+		const seller = req.query.username;
+		Product.find({ seller: seller })
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: `${seller} has no products to sell.`,
+					});
+				}
+
+				const productSummary = products.map(product => {
+					const quantity = product.quantity;
+					const name = product.name;
+					return `${quantity} ${quantity === 1 ? 'piece' : 'pieces'} ${name}`;
+				});
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+				return res.send({
+					message: `Here is the list of ${seller}'s products.`,
+					summary: details,
+					products: products,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 export const getSingleProduct = (req, res) => {
 	try {
 		const id = mongoose.Types.ObjectId(req.params.id);
@@ -98,7 +135,8 @@ export const getSingleProduct = (req, res) => {
 
 export const createSingleProduct = (req, res) => {
 	try {
-		let productByName = { name: req.body.name };
+		const { name, description, price, quantity } = req.body;
+		let productByName = { name: name };
 
 		Product.findOne(productByName)
 			.then(product => {
@@ -109,18 +147,18 @@ export const createSingleProduct = (req, res) => {
 				}
 
 				const newProduct = new Product({
-					name: req.body.name,
-					description: req.body.description,
-					price: req.body.price,
-					quantity: req.body.quantity,
-					seller: req.user.fullName,
+					name: name,
+					description: description,
+					price: price,
+					quantity: quantity,
+					seller: req.user.username,
 				});
 
 				const _newProduct = {
-					name: req.body.name,
-					description: req.body.description,
-					price: req.body.price,
-					quantity: req.body.quantity,
+					name: name,
+					description: description,
+					price: price,
+					quantity: quantity,
 				};
 
 				newProduct

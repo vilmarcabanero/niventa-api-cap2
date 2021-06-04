@@ -6,6 +6,7 @@ export const register = (req, res) => {
 	try {
 		const { firstName, lastName, email, mobileNo, password, confirmPassword } =
 			req.body;
+		const [username] = email.split('@');
 
 		let userByEmail = { email: email };
 
@@ -28,6 +29,7 @@ export const register = (req, res) => {
 				const newUser = new User({
 					firstName: firstName,
 					lastName: lastName,
+					username: username,
 					email: email,
 					password: hashedPw,
 					isAdmin: false,
@@ -36,6 +38,7 @@ export const register = (req, res) => {
 
 				const _newUser = {
 					name: newUser.fullName,
+					username: username,
 					email: email,
 					mobileNo: mobileNo,
 				};

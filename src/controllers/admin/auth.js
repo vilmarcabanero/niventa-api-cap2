@@ -4,18 +4,21 @@ import bcrypt from 'bcrypt';
 export const register = (req, res) => {
 	try {
 		let userByEmail = { email: req.body.email };
-		const { password, confirmPassword } = req.body;
+		const { firstName, lastName, email, mobileNo, password, confirmPassword } =
+			req.body;
+		const [username] = email.split('@');
+		console.log(username);
 
 		User.findOne(userByEmail)
 			.then(user => {
 				if (user) {
-					return res.status(401).send({
+					return res.status(400).send({
 						message: `${userByEmail.email} is already registered.`,
 					});
 				}
 
 				if (password !== confirmPassword) {
-					return res.status(401).send({
+					return res.status(400).send({
 						message: `Passwords do not match.`,
 					});
 				}
@@ -23,16 +26,18 @@ export const register = (req, res) => {
 				const hashedPw = bcrypt.hashSync(password, 10);
 
 				const newUser = new User({
-					firstName: req.body.firstName,
-					lastName: req.body.lastName,
-					email: req.body.email,
+					firstName: firstName,
+					lastName: lastName,
+					email: email,
+					username: username,
 					password: hashedPw,
 					isAdmin: true,
-					mobileNo: req.body.mobileNo,
+					mobileNo: mobileNo,
 				});
 
 				const _newUser = {
 					name: newUser.fullName,
+					username: username,
 					email: req.body.email,
 					mobileNo: req.body.mobileNo,
 				};
