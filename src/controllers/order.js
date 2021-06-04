@@ -5,35 +5,33 @@ export const createOrder = (req, res) => {
 	try {
 		User.findById(req.user.id)
 			.then(foundUser => {
-				console.log(foundUser.isAdmin, 'is Admin');
 				if (foundUser.isAdmin) {
 					return res.status(401).send({
 						message: `Only non-admin users can create an order.`,
 					});
 				}
 
-				// console.log(foundUser.fullName)
-				// return res.send('You have created an order successfully.');
 
 				const foundProduct = {
 					price: 50,
-					purchaseQty: 3,
+					quantity: 2,
 					_id: '123456789',
+					name: '500-Page Valiant Reacord Book',
 				};
 
 				const itemPrice = foundProduct.price;
 
-				const purchasedQty = foundProduct.purchaseQty;
+				const purchasedQty = 1;
 
 				const subTotal = itemPrice * purchasedQty;
 
-				const totalAmount = subTotal * 5;
+				const totalAmount = subTotal * 1;
 
 				const newOrder = {
 					totalAmount: totalAmount,
-					userId: foundUser._id,
 					items: [
 						{
+							productName: foundProduct.name,
 							productId: foundProduct._id,
 							subTotal: subTotal,
 							purchasedQty: purchasedQty,
@@ -42,21 +40,18 @@ export const createOrder = (req, res) => {
 				};
 
 				foundUser.orders.push(newOrder);
-				console.log(foundUser);
+				if (purchasedQty > foundProduct.quantity) {
+					return res
+						.status(400)
+						.send({
+							message: `Not enough stocks. You order ${purchasedQty} pieces but the current stock has ${
+								foundProduct.quantity
+							} ${foundProduct.quantity === 1 ? 'piece' : 'pieces'}`,
+						});
+				}
+        res.send({message: 'You created an order successfully.'})
 				return foundUser.save();
 			})
-			// .then(user => {
-			// 	console.log(`Enrolled user: ${user.fullName}`);
-			// 	return Course.findById(req.body.courseId);
-			// })
-			// .then(course => {
-			// 	console.log(`Course enrolled: ${course.name}`);
-			// 	course.enrollees.push({ userId: req.user.id });
-			// 	return course.save();
-			// })
-			// .then(course => {
-			// 	res.send(course);
-			// })
 			.catch(err => {
 				console.log(err);
 			});

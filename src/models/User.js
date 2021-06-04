@@ -41,13 +41,13 @@ const UserSchema = new mongoose.Schema(
 					type: Date,
 					default: new Date(),
 				},
-				userId: {
-					type: String,
-					required: true,
-				},
 				items: [
 					{
 						productId: {
+							type: String,
+							required: true,
+						},
+						productName: {
 							type: String,
 							required: true,
 						},
