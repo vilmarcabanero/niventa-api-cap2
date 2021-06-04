@@ -41,6 +41,44 @@ export const getProductsByPrice = (req, res) => {
 	}
 };
 
+export const getMyProducts = (req, res) => {
+	try {
+		Product.find({ seller: req.user.fullName })
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: `You have no products yet.`,
+					});
+				}
+
+				const productSummary = products.map(product => {
+					const quantity = product.quantity;
+					const name = product.name;
+					return `${quantity} ${quantity === 1 ? 'piece' : 'pieces'} ${name}`;
+				});
+				const productTotal = productSummary.length;
+
+				console.log(productSummary);
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+				return res.send({
+					message: `Hello ${req.user.fullName}, here is the list of your products.`,
+					summary: details,
+					products: products,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 export const getSingleProduct = (req, res) => {
 	try {
 		const id = mongoose.Types.ObjectId(req.params.id);
