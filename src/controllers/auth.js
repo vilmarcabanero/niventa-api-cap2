@@ -32,7 +32,6 @@ export const register = (req, res) => {
 					username: username,
 					email: email,
 					password: hashedPw,
-					isAdmin: false,
 					mobileNo: mobileNo,
 				});
 

@@ -1,4 +1,4 @@
-import User from '../../models/User.js';
+import Adminuser from '../../models/Adminuser.js';
 import bcrypt from 'bcrypt';
 
 export const register = (req, res) => {
@@ -7,9 +7,8 @@ export const register = (req, res) => {
 		const { firstName, lastName, email, mobileNo, password, confirmPassword } =
 			req.body;
 		const [username] = email.split('@');
-		console.log(username);
 
-		User.findOne(userByEmail)
+		Adminuser.findOne(userByEmail)
 			.then(user => {
 				if (user) {
 					return res.status(400).send({
@@ -25,41 +24,40 @@ export const register = (req, res) => {
 
 				const hashedPw = bcrypt.hashSync(password, 10);
 
-				const newUser = new User({
+				const newAdminuser = new Adminuser({
 					firstName: firstName,
 					lastName: lastName,
 					email: email,
 					username: username,
 					password: hashedPw,
-					isAdmin: true,
 					mobileNo: mobileNo,
 				});
 
-				const _newUser = {
-					name: newUser.fullName,
+				const _Adminuser = {
+					name: newAdminuser.fullName,
 					username: username,
 					email: req.body.email,
 					mobileNo: req.body.mobileNo,
 				};
 
-				newUser
+				newAdminuser
 					.save()
 					.then(user => {
 						if (user) {
 							return res.send({
 								message: 'Admin user created successfully.',
-								user: _newUser,
+								user: _Adminuser,
 							});
 						}
 					})
 					.catch(err => {
-						console.log(err.message);
+						console.log(err);
 					});
 			})
 			.catch(err => {
-				console.log(err.message);
+				console.log(err);
 			});
 	} catch (err) {
-		console.log(err.message);
+		console.log(err);
 	}
 };

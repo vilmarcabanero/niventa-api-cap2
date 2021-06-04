@@ -25,6 +25,7 @@ const UserSchema = new mongoose.Schema(
 		},
 		isAdmin: {
 			type: Boolean,
+			default: false,
 		},
 		mobileNo: {
 			type: String,
@@ -40,7 +41,7 @@ const UserSchema = new mongoose.Schema(
 					type: Date,
 					default: new Date(),
 				},
-				customerId: {
+				userId: {
 					type: String,
 					required: true,
 				},
@@ -71,6 +72,5 @@ const UserSchema = new mongoose.Schema(
 UserSchema.virtual('fullName').get(function () {
 	return `${this.firstName} ${this.lastName}`;
 });
-
 
 export default mongoose.model('User', UserSchema);
