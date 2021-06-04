@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema(
 		orders: [
 			{
 				totalAmount: {
-					type: String,
+					type: Number,
 					required: true,
 				},
 				purchasedOn: {

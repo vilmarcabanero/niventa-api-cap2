@@ -29,6 +29,18 @@ const ProductSchema = new mongoose.Schema({
 		type: Date,
 		default: new Date(),
 	},
+	orders: [
+		{
+			orderId: {
+				type: String,
+				required: true,
+			},
+			purchasedOn: {
+				type: Date,
+				default: new Date(),
+			},
+		},
+	],
 });
 
 export default mongoose.model('Product', ProductSchema);
