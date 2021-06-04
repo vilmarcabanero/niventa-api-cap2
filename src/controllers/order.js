@@ -257,7 +257,7 @@ export const getAllOrders = (req, res) => {
 		const adminUserId = req.user.id;
 		User.findById(adminUserId)
 			.then(foundAdminUser => {
-				Product.find({ seller: foundAdminUser.username })
+				User.find({ seller: foundAdminUser.username })
 					.then()
 					.catch(err => console.log(err));
 			})

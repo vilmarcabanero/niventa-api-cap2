@@ -11,7 +11,30 @@ export const getActiveProducts = (req, res) => {
 					});
 				}
 
-				return res.send(products);
+				const productSummary = products.map(product => {
+					const quantity = product.quantity;
+					const name = product.name;
+					const price = product.price;
+					return {
+						name: name,
+						price: price,
+						stock: quantity,
+					};
+				});
+
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+
+				return res.send({
+					message: `Here is the list of active products.`,
+					summary: details,
+					products: products,
+				});
 			})
 			.catch(err => {
 				console.log(err);
@@ -54,15 +77,40 @@ export const getActiveProductIds = (req, res) => {
 
 export const getProductsByPrice = (req, res) => {
 	try {
-		Product.find({ price: req.params.price })
+		const { price } = req.params;
+
+		Product.find({ price: price })
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
-						message: `There are no products with price of ${req.params.price}.`,
+						message: `There are no products with price of ${price}.`,
 					});
 				}
 
-				return res.send(products);
+				// return res.send(products);
+
+				const productSummary = products.map(product => {
+					const quantity = product.quantity;
+					const name = product.name;
+					return {
+						name: name,
+						stock: quantity,
+					};
+				});
+
+
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+				return res.send({
+					message: `Here is the list of products which has a price of ${price} pesos.`,
+					summary: details,
+					products: products,
+				});
 			})
 			.catch(err => {
 				console.log(err);
@@ -81,11 +129,14 @@ export const getMyProducts = (req, res) => {
 						message: `You have no products yet.`,
 					});
 				}
-
+				
 				const productSummary = products.map(product => {
 					const quantity = product.quantity;
 					const name = product.name;
-					return `${quantity} ${quantity === 1 ? 'piece' : 'pieces'} ${name}`;
+					return {
+						name: name,
+						stock: quantity,
+					};
 				});
 				const productTotal = productSummary.length;
 
@@ -124,8 +175,14 @@ export const getProductsBySeller = (req, res) => {
 				const productSummary = products.map(product => {
 					const quantity = product.quantity;
 					const name = product.name;
-					return `${quantity} ${quantity === 1 ? 'piece' : 'pieces'} ${name}`;
+					const price = product.price;
+					return {
+						name: name,
+						price: price,
+						stock: quantity,
+					};
 				});
+
 				const productTotal = productSummary.length;
 
 				const details = {
