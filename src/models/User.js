@@ -63,6 +63,10 @@ const UserSchema = new mongoose.Schema(
 							type: Number,
 							required: true,
 						},
+						seller: {
+							type: String,
+							required: true,
+						},
 					},
 				],
 			},

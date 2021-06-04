@@ -183,6 +183,7 @@ export const createOrder = (req, res) => {
 								productPrice: product.price,
 								purchasedQty: purchasedQty,
 								subTotal: subTotal,
+								seller: product.seller,
 							};
 
 							newOrder.items.push(orderedProduct);
