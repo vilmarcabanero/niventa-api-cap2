@@ -21,6 +21,37 @@ export const getActiveProducts = (req, res) => {
 	}
 };
 
+export const getActiveProductIds = (req, res) => {
+	try {
+		Product.find({ isActive: true })
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: 'There are no active products.',
+					});
+				}
+
+				const foundProducts = products.map((product, index) => {
+					return {
+						item: index + 1,
+						name: product.name,
+						id: product._id,
+					};
+				});
+
+				return res.send({
+					message: 'Here is the list of ids of active products.',
+					products: foundProducts,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 export const getProductsByPrice = (req, res) => {
 	try {
 		Product.find({ price: req.params.price })

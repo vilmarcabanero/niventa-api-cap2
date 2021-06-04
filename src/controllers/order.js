@@ -2,7 +2,7 @@ import User from '../models/User.js';
 import Product from '../models/Product.js';
 // import Order from '../models/Order.js';
 
-export const createOrder = (req, res) => {
+export const createOrderOld = (req, res) => {
 	try {
 		User.findById(req.user.id)
 			.then(foundUser => {
@@ -49,6 +49,142 @@ export const createOrder = (req, res) => {
 				}
 				res.send({ message: 'You created an order successfully.' });
 				return foundUser.save();
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const createOrderV1 = (req, res) => {
+	try {
+		User.findById(req.user.id)
+			.then(foundUser => {
+				if (foundUser.isAdmin) {
+					return res.status(401).send({
+						message: `Only non-admin users can create an order.`,
+					});
+				}
+
+				const foundProductIds = req.body;
+				const productIds = foundProductIds.map(item => {
+					return item.id;
+				});
+
+				const productPurchasedQties = foundProductIds.map(item => {
+					return item.purchasedQty;
+				});
+
+				productIds.map((productId, index) => {
+					Product.findById(productId)
+						.then(product => {
+							const itemPrice = product.price;
+							const purchasedQty = productPurchasedQties[index];
+							const subTotal = itemPrice * purchasedQty;
+
+							// totalAmount += subTotal;
+							// console.log('sub total', subTotal);
+							// console.log('total amount', totalAmount);
+
+							const newOrder = {
+								items: [
+									{
+										productId: product._id,
+										productName: product.name,
+										subTotal: subTotal,
+										purchasedQty: purchasedQty,
+									},
+								],
+							};
+
+							foundUser.orders.push(newOrder);
+							if (purchasedQty > product.quantity) {
+								return res.status(400).send({
+									message: `Not enough stocks. You order ${purchasedQty} pieces but the current stock has ${
+										product.quantity
+									} ${product.quantity === 1 ? 'piece' : 'pieces'}`,
+								});
+							}
+							// res.send({ message: 'You created an order successfully.' });
+							return foundUser.save();
+						})
+						.then(() => {
+							res.send({ message: 'You created an order successfully.' });
+						})
+						.catch(err => {
+							console.log(err);
+						});
+
+					// foundUser.orders.push(newOrder)
+				});
+
+				res.send({ message: 'You created an order successfully.' });
+				return foundUser.save();
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const createOrder = (req, res) => {
+	try {
+		User.findById(req.user.id)
+			.then(foundUser => {
+				if (foundUser.isAdmin) {
+					return res.status(401).send({
+						message: `Only non-admin users can create an order.`,
+					});
+				}
+
+				const foundProductIds = req.body;
+				const productIds = foundProductIds.map(item => {
+					return item.id;
+				});
+
+				const productPurchasedQties = foundProductIds.map(item => {
+					return item.purchasedQty;
+				});
+
+				productIds.forEach((productId, index) => {
+					Product.findById(productId)
+						.then(product => {
+							const itemPrice = product.price;
+							const purchasedQty = productPurchasedQties[index];
+							const subTotal = itemPrice * purchasedQty;
+
+							// let totalAmount = 0;
+							// totalAmount += subTotal;
+
+							// foundUser.orders.push(newOrder)
+							// console.log('count', index + 1);
+
+							const newOrder = {
+								// totalAmount: totalAmount,
+								items: [
+									{
+										productName: product.name,
+										productId: product._id,
+										subTotal: subTotal,
+										purchasedQty: purchasedQty,
+									},
+								],
+							};
+
+							console.log('new order', index + 1, newOrder);
+						})
+						.catch(err => {
+							console.log(err);
+						});
+				});
+
+
+				res.send({ message: 'You created an order successfully.' });
+				// return foundUser.save();
 			})
 			.catch(err => {
 				console.log(err);
