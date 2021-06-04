@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Product from '../models/Product.js';
 // import Order from '../models/Order.js';
 
 export const createOrder = (req, res) => {
@@ -10,7 +11,6 @@ export const createOrder = (req, res) => {
 						message: `Only non-admin users can create an order.`,
 					});
 				}
-
 
 				const foundProduct = {
 					price: 50,
@@ -41,20 +41,77 @@ export const createOrder = (req, res) => {
 
 				foundUser.orders.push(newOrder);
 				if (purchasedQty > foundProduct.quantity) {
-					return res
-						.status(400)
-						.send({
-							message: `Not enough stocks. You order ${purchasedQty} pieces but the current stock has ${
-								foundProduct.quantity
-							} ${foundProduct.quantity === 1 ? 'piece' : 'pieces'}`,
-						});
+					return res.status(400).send({
+						message: `Not enough stocks. You order ${purchasedQty} pieces but the current stock has ${
+							foundProduct.quantity
+						} ${foundProduct.quantity === 1 ? 'piece' : 'pieces'}`,
+					});
 				}
-        res.send({message: 'You created an order successfully.'})
+				res.send({ message: 'You created an order successfully.' });
 				return foundUser.save();
 			})
 			.catch(err => {
 				console.log(err);
 			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getMyOrders = (req, res) => {
+	try {
+		User.findById(req.user.id)
+			.then(user => {
+				// console.log(user.orders);
+
+				const orderSummary = user.orders.map((order, index) => {
+					const totalAmount = order.totalAmount;
+					const item = order.items.map(item => {
+						const productName = item.productName;
+						const subTotal = item.subTotal;
+						const purchasedQty = item.purchasedQty;
+
+						return `${purchasedQty} ${
+							purchasedQty === 1 ? 'piece' : 'pieces'
+						} ${productName} for ${subTotal} pesos.`;
+					});
+					return {
+						order: index + 1,
+						total: totalAmount,
+						details: item,
+					};
+				});
+				const orderTotal = orderSummary.length;
+
+				// console.log(orderSummary);
+
+				const details = {
+					total: orderTotal,
+					details: orderSummary,
+				};
+
+				return res.send({
+					message: `Hello ${req.user.firstName}, here are your orders.`,
+					summary: details,
+					orders: user.orders,
+				});
+			})
+			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getAllOrders = (req, res) => {
+	try {
+		const adminUserId = req.user.id;
+		User.findById(adminUserId)
+			.then(foundAdminUser => {
+				Product.find({ seller: foundAdminUser.username })
+					.then()
+					.catch(err => console.log(err));
+			})
+			.catch(err => console.log(err));
 	} catch (err) {
 		console.log(err);
 	}
