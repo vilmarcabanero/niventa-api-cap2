@@ -146,9 +146,17 @@ export const createOrder = (req, res) => {
 					return item.id;
 				});
 
+				// console.log(productIds.length);
+
 				const productPurchasedQties = foundProductIds.map(item => {
 					return item.purchasedQty;
 				});
+
+				const newOrder = {
+					totalAmount: 0,
+					items: [],
+				};
+				let totalAmount = 0;
 
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
@@ -157,34 +165,36 @@ export const createOrder = (req, res) => {
 							const purchasedQty = productPurchasedQties[index];
 							const subTotal = itemPrice * purchasedQty;
 
-							// let totalAmount = 0;
-							// totalAmount += subTotal;
+							totalAmount += subTotal;
 
-							// foundUser.orders.push(newOrder)
-							// console.log('count', index + 1);
-
-							const newOrder = {
-								// totalAmount: totalAmount,
-								items: [
-									{
-										productName: product.name,
-										productId: product._id,
-										subTotal: subTotal,
-										purchasedQty: purchasedQty,
-									},
-								],
+							const orderedProduct = {
+								productId: product._id,
+								productName: product.name,
+								productPrice: product.price,
+								purchasedQty: purchasedQty,
+								subTotal: subTotal,
 							};
 
-							console.log('new order', index + 1, newOrder);
+							newOrder.items.push(orderedProduct);
+							newOrder.totalAmount = totalAmount;
+
+							if (index === productIds.length - 1) {
+								// console.log('Total amount: ', totalAmount);
+								// console.log(newOrder);
+
+								foundUser.orders.push(newOrder);
+								foundUser.save();
+
+								console.log(foundUser.orders[foundUser.orders.length - 1]._id);
+								return res.send({
+									message: 'You created an order successfully.',
+								});
+							}
 						})
 						.catch(err => {
 							console.log(err);
 						});
 				});
-
-
-				res.send({ message: 'You created an order successfully.' });
-				// return foundUser.save();
 			})
 			.catch(err => {
 				console.log(err);

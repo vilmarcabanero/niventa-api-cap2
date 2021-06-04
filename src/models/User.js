@@ -51,11 +51,15 @@ const UserSchema = new mongoose.Schema(
 							type: String,
 							required: true,
 						},
-						subTotal: {
+						productPrice: {
 							type: Number,
 							required: true,
 						},
 						purchasedQty: {
+							type: Number,
+							required: true,
+						},
+						subTotal: {
 							type: Number,
 							required: true,
 						},
