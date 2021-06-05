@@ -133,7 +133,7 @@ export const createOrderV1 = (req, res) => {
 	}
 };
 
-export const createOrderV2Okay = async (req, res) => {
+export const createOrder = async (req, res) => {
 	try {
 		User.findById(req.user.id)
 			.then(foundUser => {
@@ -202,171 +202,6 @@ export const createOrderV2Okay = async (req, res) => {
 							}
 
 							if (index === foundProductIds.length - 1) {
-								// console.log('Total amount: ', totalAmount);
-								// console.log(newOrder);
-
-								foundUser.orders.push(newOrder);
-								foundUser.save();
-
-								// console.log(foundUser.orders[foundUser.orders.length - 1]._id);
-
-								return res.send({
-									message: 'You created an order successfully.',
-									details: newOrder,
-								});
-							}
-						})
-						.catch(err => {
-							console.log(err);
-						});
-				});
-			})
-			.catch(err => {
-				console.log(err);
-			});
-	} catch (err) {
-		console.log(err);
-	}
-};
-
-export const createOrder = async (req, res) => {
-	try {
-		User.findById(req.user.id)
-			.then(foundUser => {
-				if (foundUser.isAdmin) {
-					return res.status(401).send({
-						message: `Only non-admin users can create an order.`,
-					});
-				}
-
-				const foundProductIds = req.body;
-				const productIds = foundProductIds.map(item => {
-					return item.id;
-				});
-
-				// console.log(productIds.length);
-
-				const productPurchasedQties = foundProductIds.map(item => {
-					return item.purchasedQty;
-				});
-
-				const newOrder = {
-					totalAmount: 0,
-					items: [],
-				};
-				let totalAmount = 0;
-
-				const newOrderAdmin = {
-					totalAmount: 0,
-					items: [],
-				};
-
-				const ordersArr = [];
-
-				// let totalAmountAdmin = 0;
-
-				productIds.forEach((productId, index) => {
-					Product.findById(productId)
-						.then(product => {
-							const itemPrice = product.price;
-							const purchasedQty = productPurchasedQties[index];
-							const subTotal = itemPrice * purchasedQty;
-
-							totalAmount += subTotal;
-
-							if (purchasedQty > product.quantity) {
-								return res.status(400).send({
-									message: `Not enough stocks. You order ${purchasedQty} ${
-										product.quantity <= 1 ? 'piece' : 'pieces'
-									} but the current stock has ${product.quantity} ${
-										product.quantity <= 1 ? 'piece' : 'pieces'
-									}.`,
-								});
-							}
-
-							const orderedProduct = {
-								productId: product._id,
-								productName: product.name,
-								productPrice: product.price,
-								purchasedQty: purchasedQty,
-								subTotal: subTotal,
-								customer: foundUser.username,
-								seller: product.seller,
-							};
-
-							newOrder.items.push(orderedProduct);
-							newOrder.totalAmount = totalAmount;
-
-							product.quantity -= purchasedQty;
-
-							if (product.quantity > 0) {
-								product.save();
-							} else {
-								product.isActive = false;
-								product.save();
-							}
-
-							const orderedProductAdmin = {
-								productId: product._id,
-								productName: product.name,
-								productPrice: product.price,
-								purchasedQty: purchasedQty,
-								subTotal: subTotal,
-								customer: foundUser.username,
-								seller: product.seller,
-							};
-
-							// console.log(product.seller);
-							// console.log(orderedProductAdmin)
-
-							Adminuser.find({ username: product.seller })
-								.then(users => {
-									users.forEach((user, indexSeller) => {
-										if (user.username === product.seller) {
-											// console.log(
-											// 	`${user.username} is the seller of ${product.name}.`
-											// );
-
-											if (index === productIds.length - 1) {
-												user.orders.push(newOrder);
-												user.save();
-												// console.log(user.orders);
-											}
-
-											// user.orders.push()
-
-											console.log(user.orders);
-
-											user.orders.forEach(order => {
-												console.log(
-													`order of seller ${user.username}: ${order}`
-												);
-												// order.items.push(orderedProductAdmin);
-											});
-											// console.log(
-											// 	'Line 333 user.orders.items: ',
-											// 	user.orders.items
-											// );
-
-											// user.orders.items.push(orderedProductAdmin);
-											// user.orders.totalAmount = totalAmount;
-											// console.log(user.orders.items);
-											// console.log(user.orders.totalAmount);
-
-											// if (index === productIds.length - 1) {
-											// 	// user.save();
-											// 	console.log('user.save() done.');
-											// }
-
-											// console.log(`count for ${user.username}: `, index + 1);
-										}
-									});
-								})
-								.catch(err => {
-									console.log(err);
-								});
-
-							if (index === productIds.length - 1) {
 								// console.log('Total amount: ', totalAmount);
 								// console.log(newOrder);
 
@@ -473,7 +308,7 @@ export const getAllOrdersForAdminOld = (req, res) => {
 	}
 };
 
-export const getAllOrdersForAdmin = (req, res) => {
+export const getAllOrdersForSellerOld = (req, res) => {
 	try {
 		let allOrders = [];
 		let total = 0;
@@ -481,19 +316,58 @@ export const getAllOrdersForAdmin = (req, res) => {
 		User.find()
 			.then(users => {
 				users.forEach(user => {
-					const order = user.orders.map((order, index) => {
+					const orders = user.orders.map((order, index) => {
+						console.log(req.user.username);
+
+						const filteredOrder = order.items.filter(
+							item => item.seller === req.user.username
+						);
+
 						total = index + 1;
 						return {
 							order: index + 1,
-							details: {
-								totalAmount: order.items[0].totalAmount,
-								items: order.items,
-							},
+							details: filteredOrder,
 						};
 					});
 
-					allOrders.push(order);
+					allOrders.push(orders);
 				});
+			})
+			.then(() => {
+				res.send({
+					message: `Hi ${req.user.firstName}, here is the list of orders by your customers.`,
+					totalOrders: total,
+					details: allOrders,
+				});
+			})
+			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getAllOrdersForSeller = (req, res) => {
+	try {
+		let allOrders = [];
+		let total = 0;
+
+		User.find()
+			.then(users => {
+				const filteredOrders = [];
+				users.forEach(user => {
+					user.orders.forEach((order, index) => {
+						const filteredOrder = order.items.filter(
+							item => item.seller === req.user.username
+						);
+
+						total = index + 1;
+						if (filteredOrder.length !== 0) {
+							console.log(filteredOrder);
+							filteredOrders.push(filteredOrder);
+						}
+					});
+				});
+				allOrders.push(filteredOrders);
 			})
 			.then(() => {
 				res.send({
