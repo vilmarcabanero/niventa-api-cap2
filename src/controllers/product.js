@@ -156,6 +156,63 @@ export const getProductsByPrice = (req, res) => {
 	}
 };
 
+export const getActiveProductsByPrice = (req, res) => {
+	try {
+		const { price } = req.params;
+
+		const filter = {
+			$match: {
+				$and: [
+					{
+						price: price,
+					},
+					{
+						isActive: true,
+					},
+				],
+			},
+		};
+
+		Product.aggregate([filter])
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: `There are no active products with price of ${price}.`,
+					});
+				}
+
+				// return res.send(products);
+
+				const productSummary = products.map(product => {
+					const quantity = product.quantity;
+					const name = product.name;
+					return {
+						name: name,
+						stock: quantity,
+					};
+				});
+
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+				return res.send({
+					message: `Here is the list of active products which has a price of ${price} pesos.`,
+					summary: details,
+					products: products,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 export const getMyProducts = (req, res) => {
 	try {
 		Product.find({ seller: req.user.username })
@@ -301,10 +358,17 @@ export const getActiveProductsByPriceRange = (req, res) => {
 
 		const filter = {
 			$match: {
-				price: {
-					$gte: start,
-					$lte: end,
-				},
+				$and: [
+					{
+						price: {
+							$gte: start,
+							$lte: end,
+						},
+					},
+					{
+						isActive: true,
+					},
+				],
 			},
 		};
 
@@ -318,7 +382,7 @@ export const getActiveProductsByPriceRange = (req, res) => {
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
-						message: `There are no products that range from ${start} and ${end} pesos.`,
+						message: `There are no active products that range from ${start} and ${end} pesos.`,
 					});
 				}
 
@@ -338,7 +402,7 @@ export const getActiveProductsByPriceRange = (req, res) => {
 				};
 
 				return res.send({
-					message: `Here is the list of products that ranges between ${start} and ${end} pesos. `,
+					message: `Here is the list of active products that ranges between ${start} and ${end} pesos. `,
 					summary: details,
 					products: products,
 				});
@@ -350,7 +414,6 @@ export const getActiveProductsByPriceRange = (req, res) => {
 		console.log(err);
 	}
 };
-
 
 export const getSingleProduct = (req, res) => {
 	try {
