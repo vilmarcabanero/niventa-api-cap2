@@ -31,6 +31,50 @@ const AdminuserSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		orders: [
+			{
+				totalAmount: {
+					type: Number,
+					required: true,
+				},
+				purchasedOn: {
+					type: Date,
+					default: new Date(),
+				},
+				items: [
+					{
+						productId: {
+							type: String,
+							required: true,
+						},
+						productName: {
+							type: String,
+							required: true,
+						},
+						productPrice: {
+							type: Number,
+							required: true,
+						},
+						purchasedQty: {
+							type: Number,
+							required: true,
+						},
+						subTotal: {
+							type: Number,
+							required: true,
+						},
+						seller: {
+							type: String,
+							required: true,
+						},
+						customer: {
+							type: String,
+							required: true,
+						},
+					},
+				],
+			},
+		],
 	},
 	{
 		timestamps: true,

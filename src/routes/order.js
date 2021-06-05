@@ -5,7 +5,7 @@ import * as mAuth from '../middlewares/auth.js';
 
 router.get('/myorders', mAuth.verify, o.getMyOrders);
 router.get('/all', mAuth.verify, mAuth.verifyAdmin, o.getAllOrders);
-
+router.get('/seller', mAuth.verify, mAuth.verifyAdmin, o.getAllOrdersForAdmin )
 router.post('/', mAuth.verify, o.createOrder);
 
 export default router;
