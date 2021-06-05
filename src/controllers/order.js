@@ -106,15 +106,14 @@ export const getMyOrders = (req, res) => {
 				const orderSummary = user.orders.map((order, index) => {
 					const totalAmount = order.totalAmount;
 					const item = order.items.map((item, index) => {
-						const productName = item.productName;
-						const subTotal = item.subTotal;
-						const purchasedQty = item.purchasedQty;
-
 						return {
 							item: index + 1,
-							details: `${purchasedQty} ${
-								purchasedQty <= 1 ? 'piece' : 'pieces'
-							} ${productName} for ${subTotal} pesos.`,
+							details: {
+								name: item.productName,
+								price: item.price,
+								purchasedQty: item.purchasedQty,
+								subTotal: item.subTotal,
+							},
 						};
 					});
 					return {

@@ -3,7 +3,19 @@ import mongoose from 'mongoose';
 
 export const getActiveProducts = (req, res) => {
 	try {
-		Product.find({ isActive: true })
+		const filter = {
+			$match: {
+				isActive: true,
+			},
+		};
+
+		const sort = {
+			$sort: {
+				price: 1,
+			},
+		};
+
+		Product.aggregate([filter, sort])
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
@@ -43,11 +55,23 @@ export const getActiveProducts = (req, res) => {
 
 export const getInactiveProducts = (req, res) => {
 	try {
-		Product.find({ isActive: false })
+		const filter = {
+			$match: {
+				isActive: false,
+			},
+		};
+
+		const sort = {
+			$sort: {
+				price: 1,
+			},
+		};
+
+		Product.aggregate([filter, sort])
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
-						message: 'There are no active products.',
+						message: 'There are no inactive products.',
 					});
 				}
 
@@ -68,7 +92,7 @@ export const getInactiveProducts = (req, res) => {
 				};
 
 				return res.send({
-					message: `Here is the list of active products.`,
+					message: `Here is the list of inactive products.`,
 					summary: details,
 					products: products,
 				});
@@ -158,7 +182,8 @@ export const getProductsByPrice = (req, res) => {
 
 export const getActiveProductsByPrice = (req, res) => {
 	try {
-		const { price } = req.params;
+		let price = req.params.price;
+		price = parseInt(price);
 
 		const filter = {
 			$match: {
@@ -215,7 +240,19 @@ export const getActiveProductsByPrice = (req, res) => {
 
 export const getMyProducts = (req, res) => {
 	try {
-		Product.find({ seller: req.user.username })
+		const filter = {
+			$match: {
+				seller: req.user.username,
+			},
+		};
+
+		const sort = {
+			$sort: {
+				price: 1,
+			},
+		};
+
+		Product.aggregate([filter, sort])
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
@@ -224,11 +261,10 @@ export const getMyProducts = (req, res) => {
 				}
 
 				const productSummary = products.map(product => {
-					const quantity = product.quantity;
-					const name = product.name;
 					return {
-						name: name,
-						stock: quantity,
+						name: product.name,
+						price: product.price,
+						stock: product.quantity,
 					};
 				});
 				const productTotal = productSummary.length;
