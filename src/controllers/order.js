@@ -348,32 +348,48 @@ export const getAllOrdersForSellerOld = (req, res) => {
 
 export const getAllOrdersForSeller = (req, res) => {
 	try {
-		let allOrders = [];
-		let total = 0;
+		const filteredOrders = [];
+		let count = 0;
 
 		User.find()
 			.then(users => {
-				const filteredOrders = [];
 				users.forEach(user => {
-					user.orders.forEach((order, index) => {
-						const filteredOrder = order.items.filter(
+					user.orders.forEach(order => {
+						const filteredItems = order.items.filter(
 							item => item.seller === req.user.username
 						);
 
-						total = index + 1;
-						if (filteredOrder.length !== 0) {
-							console.log(filteredOrder);
-							filteredOrders.push(filteredOrder);
+						const mappedFilteredItems = filteredItems.map(item => {
+							return {
+								name: item.productName,
+								price: item.productPrice,
+								purchasedQty: item.purchasedQty,
+								subTotal: item.subTotal,
+								customer: item.customer,
+							};
+						});
+
+						if (filteredItems.length !== 0) {
+							const subTotals = filteredItems.map(item => item.subTotal);
+							const totalAmount = subTotals.reduce(
+								(acc, currVal) => acc + currVal
+							);
+
+							count++;
+							filteredOrders.push({
+								order: count,
+								totalAmount: totalAmount,
+								items: mappedFilteredItems,
+							});
 						}
 					});
 				});
-				allOrders.push(filteredOrders);
 			})
 			.then(() => {
 				res.send({
 					message: `Hi ${req.user.firstName}, here is the list of orders by your customers.`,
-					totalOrders: total,
-					details: allOrders,
+					totalOrders: filteredOrders.length,
+					details: filteredOrders,
 				});
 			})
 			.catch(err => console.log(err));
