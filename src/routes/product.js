@@ -7,6 +7,8 @@ import * as mAuth from '../middlewares/auth.js';
 router.get('/active', p.getActiveProducts);
 router.get('/inactive', p.getInactiveProducts);
 router.get('/active/ids', p.getActiveProductIds);
+router.get('/price', p.getProductsByPriceRange);
+// router.get('/price/active/:price', p.getActiveProductsByPrice);
 router.get('/price/:price', p.getProductsByPrice);
 router.get('/seller', p.getProductsBySeller);
 router.get('/myproducts', mAuth.verify, mAuth.verifyAdmin, p.getMyProducts);

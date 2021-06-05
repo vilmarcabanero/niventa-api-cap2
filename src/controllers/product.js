@@ -16,7 +16,7 @@ export const getActiveProducts = (req, res) => {
 						name: product.name,
 						price: product.price,
 						stock: product.quantity,
-						seller: product.seller
+						seller: product.seller,
 					};
 				});
 
@@ -26,7 +26,6 @@ export const getActiveProducts = (req, res) => {
 					total: productTotal,
 					details: productSummary,
 				};
-
 
 				return res.send({
 					message: `Here is the list of active products.`,
@@ -57,7 +56,7 @@ export const getInactiveProducts = (req, res) => {
 						name: product.name,
 						price: product.price,
 						stock: product.quantity,
-						seller: product.seller
+						seller: product.seller,
 					};
 				});
 
@@ -67,7 +66,6 @@ export const getInactiveProducts = (req, res) => {
 					total: productTotal,
 					details: productSummary,
 				};
-
 
 				return res.send({
 					message: `Here is the list of active products.`,
@@ -137,7 +135,6 @@ export const getProductsByPrice = (req, res) => {
 					};
 				});
 
-
 				const productTotal = productSummary.length;
 
 				const details = {
@@ -168,7 +165,7 @@ export const getMyProducts = (req, res) => {
 						message: `You have no products yet.`,
 					});
 				}
-				
+
 				const productSummary = products.map(product => {
 					const quantity = product.quantity;
 					const name = product.name;
@@ -212,13 +209,10 @@ export const getProductsBySeller = (req, res) => {
 				}
 
 				const productSummary = products.map(product => {
-					const quantity = product.quantity;
-					const name = product.name;
-					const price = product.price;
 					return {
-						name: name,
-						price: price,
-						stock: quantity,
+						name: product.name,
+						price: product.price,
+						stock: product.quantity,
 					};
 				});
 
@@ -242,6 +236,121 @@ export const getProductsBySeller = (req, res) => {
 		console.log(err);
 	}
 };
+
+export const getProductsByPriceRange = (req, res) => {
+	try {
+		const start = parseInt(req.query.start);
+		const end = parseInt(req.query.end);
+
+		const filter = {
+			$match: {
+				price: {
+					$gte: start,
+					$lte: end,
+				},
+			},
+		};
+
+		const sort = {
+			$sort: {
+				price: 1,
+			},
+		};
+
+		Product.aggregate([filter, sort])
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: `There are no products that range from ${start} and ${end} pesos.`,
+					});
+				}
+
+				const productSummary = products.map(product => {
+					return {
+						name: product.name,
+						price: product.price,
+						stock: product.quantity,
+					};
+				});
+
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+				return res.send({
+					message: `Here is the list of products that ranges between ${start} and ${end} pesos. `,
+					summary: details,
+					products: products,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getActiveProductsByPriceRange = (req, res) => {
+	try {
+		const start = parseInt(req.query.start);
+		const end = parseInt(req.query.end);
+
+		const filter = {
+			$match: {
+				price: {
+					$gte: start,
+					$lte: end,
+				},
+			},
+		};
+
+		const sort = {
+			$sort: {
+				price: 1,
+			},
+		};
+
+		Product.aggregate([filter, sort])
+			.then(products => {
+				if (products.length === 0) {
+					return res.send({
+						message: `There are no products that range from ${start} and ${end} pesos.`,
+					});
+				}
+
+				const productSummary = products.map(product => {
+					return {
+						name: product.name,
+						price: product.price,
+						stock: product.quantity,
+					};
+				});
+
+				const productTotal = productSummary.length;
+
+				const details = {
+					total: productTotal,
+					details: productSummary,
+				};
+
+				return res.send({
+					message: `Here is the list of products that ranges between ${start} and ${end} pesos. `,
+					summary: details,
+					products: products,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 
 export const getSingleProduct = (req, res) => {
 	try {

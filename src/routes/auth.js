@@ -20,6 +20,7 @@ router.post(
 );
 
 router.post('/login', v.validateLoginRequest, v.isRequestValidated, auth.login);
+
 router.post(
 	'/admin/login',
 	v.validateLoginRequest,
