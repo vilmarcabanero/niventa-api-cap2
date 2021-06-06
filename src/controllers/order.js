@@ -16,7 +16,7 @@ export const createOrder = async (req, res) => {
 					return item.id;
 				});
 
-				// console.log(productIds.length);
+				console.log(productIds.length);
 
 				const productPurchasedQties = foundProductIds.map(item => {
 					return item.purchasedQty;
@@ -24,9 +24,11 @@ export const createOrder = async (req, res) => {
 
 				const newOrder = {
 					totalAmount: 0,
+					totalOrders: 0,
 					items: [],
 				};
 				let totalAmount = 0;
+				let totalOrders = 0;
 
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
@@ -59,6 +61,7 @@ export const createOrder = async (req, res) => {
 
 							newOrder.items.push(orderedProduct);
 							newOrder.totalAmount = totalAmount;
+							newOrder.totalOrders = newOrder.items.length;
 
 							product.quantity -= purchasedQty;
 
@@ -69,14 +72,9 @@ export const createOrder = async (req, res) => {
 								product.save();
 							}
 
-							if (index === foundProductIds.length - 1) {
-								// console.log('Total amount: ', totalAmount);
-								// console.log(newOrder);
-
+							if (index === productIds.length - 1) {
 								user.orders.push(newOrder);
 								user.save();
-
-								// console.log(user.orders[user.orders.length - 1]._id);
 
 								return res.send({
 									message: 'You created an order successfully.',
