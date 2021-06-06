@@ -3,9 +3,9 @@ import Product from '../models/Product.js';
 
 export const createOrder = async (req, res) => {
 	try {
-		User.findById(req.user.id)
-			.then(foundUser => {
-				if (foundUser.isAdmin) {
+		await User.findById(req.user.id)
+			.then(user => {
+				if (user.isAdmin) {
 					return res.status(401).send({
 						message: `Only non-admin users can create an order.`,
 					});
@@ -73,10 +73,10 @@ export const createOrder = async (req, res) => {
 								// console.log('Total amount: ', totalAmount);
 								// console.log(newOrder);
 
-								foundUser.orders.push(newOrder);
-								foundUser.save();
+								user.orders.push(newOrder);
+								user.save();
 
-								// console.log(foundUser.orders[foundUser.orders.length - 1]._id);
+								// console.log(user.orders[user.orders.length - 1]._id);
 
 								return res.send({
 									message: 'You created an order successfully.',
@@ -244,6 +244,40 @@ export const getAllOrders = (req, res) => {
 				});
 			})
 			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getMyCustomers = async (req, res) => {
+	try {
+		let customers = [];
+		let customerList = [];
+
+		await User.find()
+			.then(users => {
+				users.forEach(user => {
+					user.orders.forEach(order => {
+						const filteredItems = order.items.filter(
+							item => item.seller === req.user.username
+						);
+
+						customers = filteredItems.map(item => item.customer);
+
+						if (customers[0]) {
+							customerList.push(customers[0]);
+						}
+					});
+				});
+			})
+			.catch(err => console.log(err));
+
+		customerList = [...new Set(customerList)];
+
+		return res.send({
+			message: `Hello ${req.user.firstName}, here is the list of your customers.`,
+			customers: customerList,
+		});
 	} catch (err) {
 		console.log(err);
 	}
