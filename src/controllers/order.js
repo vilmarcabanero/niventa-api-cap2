@@ -196,7 +196,7 @@ export const getAllOrdersForSeller = (req, res) => {
 	}
 };
 
-export const getAllOrders = (req, res) => {
+export const getAllOrdersOld = (req, res) => {
 	try {
 		if (req.user.username !== 'vilmarcabanero') {
 			return res.status(401).send({
@@ -224,6 +224,49 @@ export const getAllOrders = (req, res) => {
 				res.send({
 					message: 'Here is the list of all orders.',
 					totalOrders: total,
+					details: allOrders,
+				});
+			})
+			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getAllOrders = (req, res) => {
+	try {
+		if (req.user.username !== 'vilmarcabanero') {
+			return res.status(401).send({
+				message: 'Only the super admin can access this route.',
+			});
+		}
+
+		let allOrders = [];
+		let totalCustomers = 0;
+		let totalOrders = 0;
+		User.find()
+			.then(users => {
+				users.forEach((user, userIndex) => {
+					totalCustomers = userIndex + 1;
+					const order = user.orders.map((order, orderIndex) => {
+						totalOrders = orderIndex + 1;
+						return {
+							order: orderIndex + 1,
+							details: order,
+						};
+					});
+
+					allOrders.push({
+						customer: user.fullName,
+						totalOrders: totalOrders,
+						orderDetails: order,
+					});
+				});
+			})
+			.then(() => {
+				res.send({
+					message: 'Here is the list of all orders of each customer.',
+					totalCustomers: totalCustomers,
 					details: allOrders,
 				});
 			})
