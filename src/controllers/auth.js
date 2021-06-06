@@ -173,13 +173,14 @@ export const forgotPassword = async (req, res) => {
 
 		await user.save();
 
-		const message = `<h2>Hello ${user.firstName},</h2><h4>You have requested a password reset</h4><p>Please use this reset token to reset your password.</p> <p>${resetToken}</p>`;
-
-		// console.log(resetToken);
+		const message = `Hello ${user.firstName}, please user the above reset token to reset your password.`;
 
 		try {
-			return res.send(message);
-		} catch (error) {
+			return res.send({
+				token: resetToken,
+				message: message,
+			});
+		} catch (err) {
 			user.resetPasswordToken = undefined;
 			user.resetPasswordExpire = undefined;
 
@@ -217,9 +218,9 @@ export const resetPassword = async (req, res) => {
 		user.resetPasswordExpire = undefined;
 
 		await user.save();
-		res.status(201).send({
+		return res.send({
 			success: true,
-			data: 'Password Reset Success',
+			message: `Hello ${user.firstName}, you've successfully reset your password.`,
 		});
 	} catch (err) {
 		console.log(err);
