@@ -144,58 +144,6 @@ export const getMyOrders = (req, res) => {
 	}
 };
 
-export const getAllOrdersForSellerOld = (req, res) => {
-	try {
-		const filteredOrders = [];
-		let count = 0;
-
-		User.find()
-			.then(users => {
-				users.forEach(user => {
-					user.orders.forEach(order => {
-						const filteredItems = order.items.filter(
-							item => item.seller === req.user.username
-						);
-
-						const mappedFilteredItems = filteredItems.map(item => {
-							return {
-								name: item.productName,
-								price: item.productPrice,
-								purchasedQty: item.purchasedQty,
-								subTotal: item.subTotal,
-								customer: item.customer,
-							};
-						});
-
-						if (filteredItems.length !== 0) {
-							const subTotals = filteredItems.map(item => item.subTotal);
-							const totalAmount = subTotals.reduce(
-								(acc, currVal) => acc + currVal
-							);
-
-							count++;
-							filteredOrders.push({
-								order: count,
-								totalAmount: totalAmount,
-								items: mappedFilteredItems,
-							});
-						}
-					});
-				});
-			})
-			.then(() => {
-				res.send({
-					message: `Hi ${req.user.firstName}, here is the list of orders by your customers.`,
-					totalOrders: filteredOrders.length,
-					details: filteredOrders,
-				});
-			})
-			.catch(err => console.log(err));
-	} catch (err) {
-		console.log(err);
-	}
-};
-
 export const getAllOrdersForSeller = (req, res) => {
 	try {
 		const filteredOrders = [];

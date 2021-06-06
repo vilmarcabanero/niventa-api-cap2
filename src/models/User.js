@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 
 const UserSchema = new mongoose.Schema(
 	{
@@ -23,6 +24,8 @@ const UserSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		resetPasswordToken: String,
+		resetPasswordExpire: Date,
 		isAdmin: {
 			type: Boolean,
 			default: false,
@@ -84,5 +87,18 @@ const UserSchema = new mongoose.Schema(
 UserSchema.virtual('fullName').get(function () {
 	return `${this.firstName} ${this.lastName}`;
 });
+
+UserSchema.methods.getResetPasswordToken = function () {
+	const resetToken = crypto.randomBytes(20).toString('hex');
+
+	this.resetPasswordToken = crypto
+		.createHash('sha256')
+		.update(resetToken)
+		.digest('hex');
+
+	this.resetPasswordExpire = Date.now() + 10 * (60 * 1000);
+
+	return resetToken;
+};
 
 export default mongoose.model('User', UserSchema);

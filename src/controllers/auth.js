@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import * as auth from '../middlewares/auth.js';
+import crypto from 'crypto';
 
 export const register = (req, res) => {
 	try {
@@ -151,6 +152,75 @@ export const updateUserInfo = async (req, res) => {
 			.catch(err => {
 				console.log(err);
 			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const forgotPassword = async (req, res) => {
+	const { email } = req.body;
+
+	try {
+		const user = await User.findOne({ email });
+
+		if (!user) {
+			return res.status(400).send({
+				message: `${email} is not yet registered.`,
+			});
+		}
+
+		const resetToken = user.getResetPasswordToken();
+
+		await user.save();
+
+		const message = `<h2>Hello ${user.firstName},</h2><h4>You have requested a password reset</h4><p>Please use this reset token to reset your password.</p> <p>${resetToken}</p>`;
+
+		// console.log(resetToken);
+
+		try {
+			return res.send(message);
+		} catch (error) {
+			user.resetPasswordToken = undefined;
+			user.resetPasswordExpire = undefined;
+
+			await user.save();
+
+			return res.status(500).send('Email could not be sent.');
+		}
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const resetPassword = async (req, res) => {
+	const resetPasswordToken = crypto
+		.createHash('sha256')
+		.update(req.params.resetToken)
+		.digest('hex');
+
+	try {
+		const user = await User.findOne({
+			resetPasswordToken,
+			resetPasswordExpire: { $gt: Date.now() },
+		});
+
+		if (!user) {
+			return res.status(400).send({
+				message: 'Invalid reset token.',
+			});
+		}
+
+		const hashedPw = bcrypt.hashSync(req.body.password, 10);
+
+		user.password = hashedPw;
+		user.resetPasswordToken = undefined;
+		user.resetPasswordExpire = undefined;
+
+		await user.save();
+		res.status(201).send({
+			success: true,
+			data: 'Password Reset Success',
+		});
 	} catch (err) {
 		console.log(err);
 	}
