@@ -159,7 +159,6 @@ export const getAllOrdersForSeller = (req, res) => {
 						);
 
 						const mappedFilteredItems = filteredItems.map(item => {
-							
 							return {
 								name: item.productName,
 								price: item.productPrice,
@@ -206,26 +205,35 @@ export const getAllOrders = (req, res) => {
 			});
 		}
 
-		let allOrders = [];
+		const allOrders = [];
 		let totalCustomers = 0;
 		let totalOrders = 0;
 		User.find()
 			.then(users => {
-				users.forEach((user, userIndex) => {
-					totalCustomers = userIndex + 1;
+				users.forEach(user => {
+					if (user.orders.length !== 0) {
+						totalCustomers++;
+					}
+
 					const order = user.orders.map((order, orderIndex) => {
-						totalOrders = orderIndex + 1;
+						if (order.length !== 0) {
+							totalOrders++;
+						}
 						return {
 							order: orderIndex + 1,
 							details: order,
 						};
 					});
 
-					allOrders.push({
-						customer: user.fullName,
-						totalOrders: totalOrders,
-						orderDetails: order,
-					});
+					if (user.orders.length !== 0) {
+						allOrders.push({
+							customer: user.fullName,
+							totalOrders: totalOrders,
+							orderDetails: order,
+						});
+					}
+
+					totalOrders = 0;
 				});
 			})
 			.then(() => {
