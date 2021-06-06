@@ -110,9 +110,10 @@ export const getMyOrders = (req, res) => {
 							item: index + 1,
 							details: {
 								name: item.productName,
-								price: item.price,
+								price: item.productPrice,
 								purchasedQty: item.purchasedQty,
 								subTotal: item.subTotal,
+								seller: item.seller,
 							},
 						};
 					});
@@ -135,7 +136,6 @@ export const getMyOrders = (req, res) => {
 				return res.send({
 					message: `Hello ${req.user.firstName}, here are your orders.`,
 					summary: details,
-					orders: user.orders,
 				});
 			})
 			.catch(err => console.log(err));
@@ -188,43 +188,6 @@ export const getAllOrdersForSeller = (req, res) => {
 					message: `Hi ${req.user.firstName}, here is the list of orders by your customers.`,
 					totalOrders: filteredOrders.length,
 					details: filteredOrders,
-				});
-			})
-			.catch(err => console.log(err));
-	} catch (err) {
-		console.log(err);
-	}
-};
-
-export const getAllOrdersOld = (req, res) => {
-	try {
-		if (req.user.username !== 'vilmarcabanero') {
-			return res.status(401).send({
-				message: 'Only the super admin can access this route.',
-			});
-		}
-
-		let allOrders = [];
-		let total = 0;
-		User.find()
-			.then(users => {
-				users.forEach(user => {
-					const order = user.orders.map((order, index) => {
-						total = index + 1;
-						return {
-							order: index + 1,
-							details: order,
-						};
-					});
-
-					allOrders.push(order);
-				});
-			})
-			.then(() => {
-				res.send({
-					message: 'Here is the list of all orders.',
-					totalOrders: total,
-					details: allOrders,
 				});
 			})
 			.catch(err => console.log(err));
