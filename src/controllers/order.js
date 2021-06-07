@@ -296,11 +296,83 @@ export const checkout = (req, res) => {};
 
 export const addToCart = async (req, res) => {
 	try {
-		await User.findOne({ username: req.user.username })
+		await User.findById(req.user.id)
 			.then(user => {
-				return res.send(user.carts);
+				if (user.isAdmin) {
+					return res.status(401).send({
+						message: `Only non-admin users can create an order.`,
+					});
+				}
+
+				const foundProductIds = req.body;
+				const productIds = foundProductIds.map(item => {
+					return item.id;
+				});
+
+				console.log(productIds.length);
+
+				const productPurchasedQties = foundProductIds.map(item => {
+					return item.purchasedQty;
+				});
+
+				const newCart = {
+					totalAmount: 0,
+					totalItems: 0,
+					items: [],
+				};
+				let totalAmount = 0;
+
+				productIds.forEach((productId, index) => {
+					Product.findById(productId)
+						.then(async product => {
+							const itemPrice = product.price;
+							const purchasedQty = productPurchasedQties[index];
+							const subTotal = itemPrice * purchasedQty;
+
+							totalAmount += subTotal;
+
+							if (purchasedQty > product.quantity) {
+								return res.status(400).send({
+									message: `Not enough stocks. You added ${purchasedQty} ${
+										product.quantity <= 1 ? 'piece' : 'pieces'
+									} in your cart but the current stock has ${product.quantity} ${
+										product.quantity <= 1 ? 'piece' : 'pieces'
+									}.`,
+								});
+							}
+
+							const addedProduct = {
+								productId: product._id,
+								productName: product.name,
+								productPrice: product.price,
+								purchasedQty: purchasedQty,
+								subTotal: subTotal,
+								seller: product.seller,
+								customer: req.user.username,
+							};
+
+							newCart.items.push(addedProduct);
+							newCart.totalAmount = totalAmount;
+							newCart.totalItems = newCart.items.length;
+
+							if (index === productIds.length - 1) {
+								user.carts.push(newCart);
+								await user.save();
+
+								return res.send({
+									message: `Hi ${req.user.firstName}, you've successfully added items to your cart.`,
+									details: newCart,
+								});
+							}
+						})
+						.catch(err => {
+							console.log(err);
+						});
+				});
 			})
-			.catch(err => console.log(err));
+			.catch(err => {
+				console.log(err);
+			});
 	} catch (err) {
 		console.log(err);
 	}
