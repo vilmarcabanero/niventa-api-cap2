@@ -1,4 +1,4 @@
-import Adminuser from '../../models/Adminuser.js';
+import Adminuser from '../../models/admin/User.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto'
 import * as auth from '../../middlewares/auth.js';
