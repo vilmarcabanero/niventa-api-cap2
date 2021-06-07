@@ -350,6 +350,10 @@ export const clearCart = async (req, res) => {
 
 				const productIds = [];
 
+        const products = []
+
+        console.log(product, 'before')
+
 				user.carts[0].items.forEach(item => {
 					console.log(item);
 					productIds.push(item.productId);
@@ -364,7 +368,7 @@ export const clearCart = async (req, res) => {
 						.catch(err => console.log(err));
 				});
 
-				console.log(originalQties);
+				console.log(product, 'after');
 
 				return;
 
