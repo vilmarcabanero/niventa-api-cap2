@@ -15,8 +15,5 @@ router.get(
 router.get('/get/mycustomers', mAuth.verify, mAuth.verifyAdmin, o.getMyCustomers);
 
 router.post('/create', mAuth.verify, o.createOrder);
-router.post('/checkout', mAuth.verify, o.checkout);
-router.post('/carts/add', mAuth.verify, o.addToCart);
-router.post('/carts/update', mAuth.verify, o.updateCart);
 
 export default router;

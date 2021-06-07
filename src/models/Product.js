@@ -26,8 +26,8 @@ const ProductSchema = new mongoose.Schema({
 		default: true,
 	},
 	createdOn: {
-		type: Date,
-		default: new Date(),
+		type: String,
+		// default: new Date(),
 	},
 });
 

@@ -41,8 +41,12 @@ const UserSchema = new mongoose.Schema(
 					required: true,
 				},
 				purchasedOn: {
-					type: Date,
-					default: new Date(),
+					type: String,
+					// default: new Date(),
+				},
+				isActive: {
+					type: Boolean,
+					default: true,
 				},
 				items: [
 					{
@@ -59,6 +63,55 @@ const UserSchema = new mongoose.Schema(
 							required: true,
 						},
 						purchasedQty: {
+							type: Number,
+							required: true,
+						},
+						remainingQty: {
+							type: Number,
+							required: true,
+						},
+						subTotal: {
+							type: Number,
+							required: true,
+						},
+						seller: {
+							type: String,
+							required: true,
+						},
+						customer: {
+							type: String,
+							required: true,
+						},
+					},
+				],
+			},
+		],
+		carts: [
+			{
+				totalAmount: {
+					type: Number,
+					required: true,
+				},
+				items: [
+					{
+						productId: {
+							type: String,
+							required: true,
+						},
+						productName: {
+							type: String,
+							required: true,
+						},
+						productPrice: {
+							type: Number,
+							required: true,
+						},
+						purchasedQty: {
+							type: Number,
+							required: true,
+							default: 1,
+						},
+						remainingQty: {
 							type: Number,
 							required: true,
 						},
@@ -100,9 +153,5 @@ UserSchema.methods.getResetPasswordToken = function () {
 
 	return resetToken;
 };
-
-UserSchema.virtual('carts').get(function () {
-	return this.orders;
-});
 
 export default mongoose.model('User', UserSchema);

@@ -475,6 +475,15 @@ export const createSingleProduct = (req, res) => {
 		const { name, description, price, quantity } = req.body;
 		let productByName = { name: name };
 
+		const options = {
+			weekday: 'long',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+		};
+		let today = new Date();
+		today = today.toLocaleDateString('en-US', options);
+
 		Product.findOne(productByName)
 			.then(product => {
 				if (product) {
@@ -489,6 +498,7 @@ export const createSingleProduct = (req, res) => {
 					price: price,
 					quantity: quantity,
 					seller: req.user.username,
+					createdOn: today,
 				});
 
 				const _newProduct = {
