@@ -252,11 +252,13 @@ export const getMyProducts = (req, res) => {
 			},
 		};
 
+		// const [firstName] = req.user.fullName.split(' ');
+
 		Product.aggregate([filter, sort])
 			.then(products => {
 				if (products.length === 0) {
 					return res.send({
-						message: `You have no products yet.`,
+						message: `Hi ${req.user.firstName}, you have no products yet.`,
 					});
 				}
 
@@ -277,7 +279,7 @@ export const getMyProducts = (req, res) => {
 				};
 
 				return res.send({
-					message: `Hello ${req.user.fullName}, here is the list of your products.`,
+					message: `Hello ${req.user.firstName}, here is the list of your products.`,
 					summary: details,
 					products: products,
 				});

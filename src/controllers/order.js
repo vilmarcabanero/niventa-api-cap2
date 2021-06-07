@@ -24,11 +24,11 @@ export const createOrder = async (req, res) => {
 
 				const newOrder = {
 					totalAmount: 0,
-					totalOrders: 0,
+					totalItems: 0,
 					items: [],
 				};
 				let totalAmount = 0;
-				let totalOrders = 0;
+				let totalItems = 0;
 
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
@@ -61,7 +61,7 @@ export const createOrder = async (req, res) => {
 
 							newOrder.items.push(orderedProduct);
 							newOrder.totalAmount = totalAmount;
-							newOrder.totalOrders = newOrder.items.length;
+							newOrder.totalItems = newOrder.items.length;
 
 							product.quantity -= purchasedQty;
 
@@ -183,7 +183,13 @@ export const getAllOrdersForSeller = (req, res) => {
 				});
 			})
 			.then(() => {
-				res.send({
+				if (!filteredOrders.length) {
+					return res.send({
+						message: `Hi ${req.user.firstName}, you currently have no customers who created an order.`,
+					});
+				}
+
+				return res.send({
 					message: `Hi ${req.user.firstName}, here is the list of orders by your customers.`,
 					totalOrders: filteredOrders.length,
 					details: filteredOrders,
@@ -272,6 +278,12 @@ export const getMyCustomers = async (req, res) => {
 
 		customerList = [...new Set(customerList)];
 
+		if (!customerList.length) {
+			return res.send({
+				message: `Hello ${req.user.firstName}, you currently have no customers who created an order.`,
+			});
+		}
+
 		return res.send({
 			message: `Hello ${req.user.firstName}, here is the list of your customers.`,
 			customers: customerList,
@@ -280,3 +292,7 @@ export const getMyCustomers = async (req, res) => {
 		console.log(err);
 	}
 };
+
+export const checkout = (req, res) => {};
+
+export const getOrdersByCustomer = (req, res) => {};

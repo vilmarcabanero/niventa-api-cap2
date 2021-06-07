@@ -1,5 +1,6 @@
 import Adminuser from '../../models/Adminuser.js';
 import bcrypt from 'bcrypt';
+import crypto from 'crypto'
 import * as auth from '../../middlewares/auth.js';
 
 export const register = (req, res) => {
@@ -94,6 +95,118 @@ export const login = (req, res) => {
 			.catch(err => {
 				console.log(err);
 			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const updateUserInfo = async (req, res) => {
+	try {
+		const foundUser = await Adminuser.findOne({ _id: req.user.id });
+
+		const { firstName, lastName, mobileNo } = req.body;
+
+		const updatedUserInfo = {
+			firstName: firstName ? firstName : foundUser.firstName,
+			lastName: lastName ? lastName : foundUser.lastName,
+			mobileNo: mobileNo ? mobileNo : foundUser.mobileNo,
+		};
+
+		const updates = {
+			previous: {
+				firstName: foundUser.firstName,
+				lastName: foundUser.lastName,
+				mobileNo: foundUser.mobileNo,
+			},
+			current: {
+				firstName: firstName ? firstName : foundUser.firstName,
+				lastName: lastName ? lastName : foundUser.lastName,
+				mobileNo: mobileNo ? mobileNo : foundUser.mobileNo,
+			},
+		};
+
+		Adminuser.findByIdAndUpdate(req.user.id, updatedUserInfo, { new: true })
+			.then(() => {
+				return res.send({
+					message: 'Your info was updated successfully.',
+					updates: updates,
+				});
+			})
+			.catch(err => {
+				console.log(err);
+			});
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const forgotPassword = async (req, res) => {
+	const { email } = req.body;
+
+	try {
+		const user = await Adminuser.findOne({ email });
+
+		if (!user) {
+			return res.status(400).send({
+				message: `${email} is not yet registered.`,
+			});
+		}
+
+		const resetToken = user.getResetPasswordToken();
+
+		await user.save();
+
+		const message = `Hello ${user.firstName}, please user the above reset token to reset your password.`;
+
+		try {
+			return res.send({
+				token: resetToken,
+				message: message,
+			});
+		} catch (err) {
+			user.resetPasswordToken = undefined;
+			user.resetPasswordExpire = undefined;
+
+			await user.save();
+
+			return res.status(500).send({
+				message: 'Email could not be sent.',
+			});
+		}
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const resetPassword = async (req, res) => {
+	try {
+		const resetPasswordToken = crypto
+			.createHash('sha256')
+			.update(req.params.resetToken)
+			.digest('hex');
+
+		const user = await Adminuser.findOne({
+			resetPasswordToken,
+			resetPasswordExpire: { $gt: Date.now() },
+		});
+
+		if (!user) {
+			return res.status(400).send({
+				message: 'Invalid reset token.',
+			});
+		}
+
+		const hashedPw = bcrypt.hashSync(req.body.password, 10);
+
+		user.password = hashedPw;
+		user.resetPasswordToken = undefined;
+		user.resetPasswordExpire = undefined;
+
+		await user.save();
+		return res.send({
+			success: true,
+			message: `Hello ${user.firstName}, you've successfully reset your password.`,
+		});
 	} catch (err) {
 		console.log(err);
 	}
