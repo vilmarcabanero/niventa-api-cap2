@@ -296,7 +296,58 @@ export const checkout = (req, res) => {};
 
 export const getOrdersByCustomer = (req, res) => {
 	try {
-		res.send('Hello');
+		const filteredOrders = [];
+		let count = 0;
+
+		User.findOne({ username: req.params.username })
+			.then(user => {
+				const customer = user.fullName;
+				user.orders.forEach(order => {
+					const filteredItems = order.items.filter(
+						item => item.seller === req.user.username
+					);
+
+					const mappedFilteredItems = filteredItems.map(item => {
+						return {
+							name: item.productName,
+							price: item.productPrice,
+							purchasedQty: item.purchasedQty,
+							subTotal: item.subTotal,
+						};
+					});
+
+					if (filteredItems.length !== 0) {
+						const subTotals = filteredItems.map(item => item.subTotal);
+						const totalAmount = subTotals.reduce(
+							(acc, currVal) => acc + currVal
+						);
+
+						count++;
+						filteredOrders.push({
+							order: count,
+							customer: customer,
+							totalAmount: totalAmount,
+							items: mappedFilteredItems,
+						});
+					}
+				});
+
+				return user;
+			})
+			.then(user => {
+				if (!filteredOrders.length) {
+					return res.send({
+						message: `Hi ${req.user.firstName}, ${user.fullName} has no orders yet.`,
+					});
+				}
+
+				return res.send({
+					message: `Hi ${req.user.firstName}, here is the list of orders by your customer ${user.fullName}`,
+					totalOrders: filteredOrders.length,
+					details: filteredOrders,
+				});
+			})
+			.catch(err => console.log(err));
 	} catch (err) {
 		console.log(err);
 	}
