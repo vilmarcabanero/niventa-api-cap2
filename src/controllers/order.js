@@ -28,11 +28,10 @@ export const createOrder = async (req, res) => {
 					items: [],
 				};
 				let totalAmount = 0;
-				let totalItems = 0;
 
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
-						.then(product => {
+						.then(async product => {
 							const itemPrice = product.price;
 							const purchasedQty = productPurchasedQties[index];
 							const subTotal = itemPrice * purchasedQty;
@@ -66,15 +65,15 @@ export const createOrder = async (req, res) => {
 							product.quantity -= purchasedQty;
 
 							if (product.quantity > 0) {
-								product.save();
+								await product.save();
 							} else {
 								product.isActive = false;
-								product.save();
+								await product.save();
 							}
 
 							if (index === productIds.length - 1) {
 								user.orders.push(newOrder);
-								user.save();
+								await user.save();
 
 								return res.send({
 									message: 'You created an order successfully.',
@@ -295,4 +294,10 @@ export const getMyCustomers = async (req, res) => {
 
 export const checkout = (req, res) => {};
 
-export const getOrdersByCustomer = (req, res) => {};
+export const getOrdersByCustomer = (req, res) => {
+	try {
+		res.send('Hello');
+	} catch (err) {
+		console.log(err);
+	}
+};
