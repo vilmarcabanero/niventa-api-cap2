@@ -143,7 +143,7 @@ export const addToCart = async (req, res) => {
 					return item.id;
 				});
 
-				console.log(productIds.length);
+				// console.log(productIds.length);
 
 				const productPurchasedQties = foundProductIds.map(item => {
 					return item.purchasedQty;
@@ -347,37 +347,56 @@ export const clearCart = async (req, res) => {
 				//Kunin muna ang remaining quantity, i.add ang remaining quantity plus the purchased quantity at yun ang original quantity, ilagay or i.update ang product.quantity sa value ng original quantity.
 
 				const originalQties = [];
-
 				const productIds = [];
+				const oldCart = {
+					totalAmount: 0,
+					addedOn: '',
+					items: [],
+				};
+				// const cartItems = [];
 
-        const products = []
-
-        console.log(product, 'before')
+				let totalAmount = 0;
 
 				user.carts[0].items.forEach(item => {
-					console.log(item);
+					// console.log(item);
+					totalAmount += item.subTotal;
+
+					oldCart.items.push(item);
 					productIds.push(item.productId);
 					originalQties.push(item.purchasedQty + item.remainingQty);
 				});
 
-				productIds.forEach(productId => {
+				oldCart.addedOn = user.carts[0].addedOn;
+				oldCart.totalAmount = totalAmount;
+
+				productIds.forEach((productId, productIdIndex) => {
 					Product.findById(productId)
-						.then(async (product, productIndex) => {
-							product.quantity = originalQties[productIndex];
+						.then(async product => {
+							product.quantity = originalQties[productIdIndex];
+
+							await product.save();
 						})
 						.catch(err => console.log(err));
 				});
 
-				console.log(product, 'after');
-
-				return;
-
 				user.carts = [];
 				await user.save();
+
+				oldCart.items = oldCart.items.map(item => {
+					return {
+						productName: item.productName,
+						productPrice: item.productPrice,
+						purchasedQty: item.purchasedQty,
+						remainingQty: item.remainingQty + item.purchasedQty,
+						subTotal: item.subTotal,
+						seller: item.seller,
+					};
+				});
 
 				if (!user.carts.length) {
 					return res.send({
 						message: 'Successfully removed all items of your cart.',
+						details: oldCart,
 					});
 				} else {
 					return res.status(500).send({
