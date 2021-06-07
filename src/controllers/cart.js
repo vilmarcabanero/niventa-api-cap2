@@ -134,7 +134,7 @@ export const addToCart = async (req, res) => {
 
 				if (user.carts.length) {
 					return res.status(400).send({
-						message: `Your cart is not empty, please proceed to your cart to remove or add items.`,
+						message: `Hello ${req.user.firstName}, your cart is not empty, please proceed to your cart to remove or add items.`,
 					});
 				}
 
@@ -340,7 +340,7 @@ export const clearCart = async (req, res) => {
 
 				if (!user.carts.length) {
 					return res.status(400).send({
-						message: `Your cart is empty, please proceed to add to cart route to add new items.`,
+						message: `Hello ${req.user.firstName}, your cart is empty, please proceed to add to cart route to add new items.`,
 					});
 				}
 
@@ -395,7 +395,7 @@ export const clearCart = async (req, res) => {
 
 				if (!user.carts.length) {
 					return res.send({
-						message: 'Successfully removed all items of your cart.',
+						message: `Hello ${req.user.firstName}, you've successfully removed all items of your cart.`,
 						details: oldCart,
 					});
 				} else {
@@ -444,7 +444,7 @@ export const getCartItems = async (req, res) => {
 
 				if (!itemTotal) {
 					return res.status(400).send({
-						message: `Your cart is empty, please proceed to add to cart route to add new items.`,
+						message: `Hello ${req.user.firstName}, your cart is empty, please proceed to add to cart route to add new items.`,
 					});
 				}
 
