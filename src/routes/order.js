@@ -3,18 +3,20 @@ const router = express.Router();
 import * as o from '../controllers/order.js';
 import * as mAuth from '../middlewares/auth.js';
 
-router.get('/myorders', mAuth.verify, o.getMyOrders);
-router.get('/all', mAuth.verify, mAuth.verifyAdmin, o.getAllOrders);
-router.get('/seller', mAuth.verify, mAuth.verifyAdmin, o.getAllOrdersForSeller);
+router.get('/get/myorders', mAuth.verify, o.getMyOrders);
+router.get('/get/all', mAuth.verify, mAuth.verifyAdmin, o.getAllOrders);
+router.get('/get/seller', mAuth.verify, mAuth.verifyAdmin, o.getAllOrdersForSeller);
 router.get(
-	'/customer/:username',
+	'/get/customer/:username',
 	mAuth.verify,
 	mAuth.verifyAdmin,
 	o.getOrdersByCustomer
 );
-router.get('/mycustomers', mAuth.verify, mAuth.verifyAdmin, o.getMyCustomers);
+router.get('/get/mycustomers', mAuth.verify, mAuth.verifyAdmin, o.getMyCustomers);
 
-router.post('/', mAuth.verify, o.createOrder);
-router.post('/carts', mAuth.verify, o.addToCart);
+router.post('/create', mAuth.verify, o.createOrder);
+router.post('/checkout', mAuth.verify, o.checkout);
+router.post('/carts/add', mAuth.verify, o.addToCart);
+router.post('/carts/update', mAuth.verify, o.updateCart);
 
 export default router;
