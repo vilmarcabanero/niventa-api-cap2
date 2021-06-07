@@ -11,21 +11,15 @@ export const checkout = async (req, res) => {
 					});
 				}
 
-				const foundProductIds = req.body;
-				const productIds = foundProductIds.map(item => {
-					return item.id;
-				});
+        if (!user.carts.length) {
+					return res.send({
+						message: `Hello ${req.user.firstName}, your cart is empty, please add some items to your cart to proceed to checkout.`,
+					});
+				}
 
-				let includes = false;
-				let cartNope = {};
-				let productIdCart = [];
-
-				// console.log(user.orders);
-
-				user.orders.forEach(cart => {
-					cartNope = cart;
+				user.orders.forEach(order => {
 					// console.log(cart);
-					cart.items.forEach(item => {
+					order.items.forEach(item => {
 						productIdCart.push(item.productId);
 					});
 
@@ -36,6 +30,8 @@ export const checkout = async (req, res) => {
 						}
 					});
 				});
+
+        
 
 				// console.log(cartNope);
 
@@ -133,7 +129,7 @@ export const addToCart = async (req, res) => {
 				}
 
 				if (user.carts.length) {
-					return res.status(400).send({
+					return res.send({
 						message: `Hello ${req.user.firstName}, your cart is not empty, please proceed to your cart to remove or add items.`,
 					});
 				}
@@ -150,9 +146,9 @@ export const addToCart = async (req, res) => {
 				});
 
 				const newCart = {
-					totalAmount: 0,
-					totalItems: 0,
 					addedOn: '',
+					totalItems: 0,
+					totalAmount: 0,
 					items: [],
 				};
 				let totalAmount = 0;
@@ -418,6 +414,8 @@ export const getCartItems = async (req, res) => {
 
 				console.log(user.cartItems);
 
+				let cart = {};
+
 				const cartSummary = user.carts.map((cart, index) => {
 					const totalAmount = cart.totalAmount;
 
@@ -434,13 +432,14 @@ export const getCartItems = async (req, res) => {
 						};
 					});
 					return {
-						order: index + 1,
+						addedOn: cart.addedOn,
 						totalAmount: totalAmount,
-						products: item,
+						items: item,
 					};
 				});
 
 				const itemTotal = cartSummary.length;
+				cart = cartSummary[0];
 
 				if (!itemTotal) {
 					return res.status(400).send({
@@ -450,14 +449,70 @@ export const getCartItems = async (req, res) => {
 
 				// console.log(orderSummary);
 
-				const details = {
-					totalItems: itemTotal,
-					details: cartSummary,
-				};
-
 				return res.send({
 					message: `Hello ${req.user.firstName}, here is the list of items in your cart.`,
-					summary: details,
+					summary: cart,
+				});
+			})
+			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const getOrderHistory = (req, res) => {
+	try {
+		const allOrders = [];
+		let totalOrders = 0;
+		User.findOne({ username: req.user.username })
+			.then(user => {
+				if (!user.orders.length) {
+					return res.send({
+						message: `Hi ${req.user.firstName}, the history of your orders is currently empty.`,
+					});
+				}
+
+				const order = user.orders.map((order, orderIndex) => {
+					return {
+						order: orderIndex + 1,
+						details: order,
+					};
+				});
+
+				console.log(order);
+
+				if (user.orders.length !== 0) {
+					allOrders.push({
+						totalOrders: totalOrders,
+						orderDetails: order,
+					});
+				}
+
+				totalOrders = 0;
+				return;
+			})
+			.then(() => {
+				res.send({
+					message: `Hi ${req.user.firstName}, here is the history of your placed orders.`,
+					details: allOrders,
+				});
+			})
+			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
+export const clearOrderHistory = (req, res) => {
+	try {
+		User.findOne({ username: req.user.username })
+			.then(user => {
+				user.orders = [];
+				user.save();
+			})
+			.then(() => {
+				res.send({
+					message: `Hi ${req.user.firstName}, you've successfully cleared the history of your placed orders.`,
 				});
 			})
 			.catch(err => console.log(err));

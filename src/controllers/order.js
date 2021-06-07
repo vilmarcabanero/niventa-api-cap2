@@ -112,6 +112,12 @@ export const getMyOrders = (req, res) => {
 			.then(user => {
 				// console.log(user.orders);
 
+				if(!user.orders.length) {
+					return res.send({
+						message: `Hi ${req.user.firstName}, the history of your orders is currently empty.`
+					})
+				}
+
 				const orderSummary = user.orders.map((order, index) => {
 					const totalAmount = order.totalAmount;
 					const item = order.items.map((item, index) => {
