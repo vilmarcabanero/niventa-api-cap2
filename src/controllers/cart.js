@@ -152,9 +152,19 @@ export const addToCart = async (req, res) => {
 				const newCart = {
 					totalAmount: 0,
 					totalItems: 0,
+					addedOn: '',
 					items: [],
 				};
 				let totalAmount = 0;
+
+				const options = {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+				};
+				const today = new Date();
+				newCart.addedOn = today.toLocaleDateString('en-US', options);
 
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)
@@ -334,15 +344,29 @@ export const clearCart = async (req, res) => {
 					});
 				}
 
-        //Kunin muna ang remaining quantity, i.add ang remaining quantity plus the purchased quantity at yun ang original quantity, ilagay or i.update ang product.quantity sa value ng original quantity.
+				//Kunin muna ang remaining quantity, i.add ang remaining quantity plus the purchased quantity at yun ang original quantity, ilagay or i.update ang product.quantity sa value ng original quantity.
 
-        user.carts.forEach(cart => {
-          cart.items.forEach(item => {
-            console.log(item)
-          })
-        })
+				const originalQties = [];
 
-        return 
+				const productIds = [];
+
+				user.carts[0].items.forEach(item => {
+					console.log(item);
+					productIds.push(item.productId);
+					originalQties.push(item.purchasedQty + item.remainingQty);
+				});
+
+				productIds.forEach(productId => {
+					Product.findById(productId)
+						.then(async (product, productIndex) => {
+							product.quantity = originalQties[productIndex];
+						})
+						.catch(err => console.log(err));
+				});
+
+				console.log(originalQties);
+
+				return;
 
 				user.carts = [];
 				await user.save();
@@ -409,7 +433,7 @@ export const getCartItems = async (req, res) => {
 				};
 
 				return res.send({
-					message: `Hello ${req.user.firstName}, here is the list of items on our cart.`,
+					message: `Hello ${req.user.firstName}, here is the list of items in your cart.`,
 					summary: details,
 				});
 			})

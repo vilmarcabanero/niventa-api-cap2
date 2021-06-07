@@ -92,6 +92,10 @@ const UserSchema = new mongoose.Schema(
 					type: Number,
 					required: true,
 				},
+				addedOn: {
+					type: String,
+					required: true,
+				},
 				items: [
 					{
 						productId: {
