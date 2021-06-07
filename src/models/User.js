@@ -101,4 +101,8 @@ UserSchema.methods.getResetPasswordToken = function () {
 	return resetToken;
 };
 
+UserSchema.virtual('carts').get(function () {
+	return this.orders;
+});
+
 export default mongoose.model('User', UserSchema);

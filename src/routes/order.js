@@ -13,6 +13,8 @@ router.get(
 	o.getOrdersByCustomer
 );
 router.get('/mycustomers', mAuth.verify, mAuth.verifyAdmin, o.getMyCustomers);
+
 router.post('/', mAuth.verify, o.createOrder);
+router.post('/carts', mAuth.verify, o.addToCart);
 
 export default router;

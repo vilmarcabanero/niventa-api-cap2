@@ -57,4 +57,5 @@ AdminuserSchema.methods.getResetPasswordToken = function () {
 	return resetToken;
 };
 
+
 export default mongoose.model('Adminuser', AdminuserSchema);

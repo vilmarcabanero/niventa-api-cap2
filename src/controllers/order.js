@@ -294,6 +294,18 @@ export const getMyCustomers = async (req, res) => {
 
 export const checkout = (req, res) => {};
 
+export const addToCart = async (req, res) => {
+	try {
+		await User.findOne({ username: req.user.username })
+			.then(user => {
+				return res.send(user.carts);
+			})
+			.catch(err => console.log(err));
+	} catch (err) {
+		console.log(err);
+	}
+};
+
 export const getOrdersByCustomer = (req, res) => {
 	try {
 		const filteredOrders = [];
