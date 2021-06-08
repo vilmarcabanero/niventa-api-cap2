@@ -1,4 +1,6 @@
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
+import chalk from 'chalk';
 
 export const createAccessToken = user => {
 	const data = {
@@ -44,4 +46,36 @@ export const verifyAdmin = (req, res, next) => {
 	} else {
 		res.status(401).send({ auth: 'Only admin users can access this route.' });
 	}
+};
+
+export const sendEmail = async (req, res, next) => {
+	let transporter = nodemailer.createTransport({
+		service: 'gmail',
+		auth: {
+			user: process.env.EMAIL_ADDRESS,
+			pass: process.env.EMAIL_PASSWORD,
+		},
+		tls: {
+			rejectUnauthorized: false,
+		},
+	});
+
+	const { email } = req.body;
+
+	let mailOptions = {
+		from: process.env.EMAIL_ADDRESS,
+		to: email,
+		subject: 'Hello G, from V.',
+		text: 'It works.',
+	};
+
+	transporter.sendMail(mailOptions, (err, data) => {
+		if (err) {
+			console.log('Error: ', chalk.bold.red(err.message));
+		} else {
+			console.log(chalk.bold.green('Email sent!'));
+		}
+	});
+
+	next();
 };

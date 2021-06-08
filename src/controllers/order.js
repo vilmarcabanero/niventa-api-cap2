@@ -11,14 +11,14 @@ export const createOrder = async (req, res) => {
 					});
 				}
 
-				const foundProductIds = req.body;
-				const productIds = foundProductIds.map(item => {
+				const foundProductData = req.body;
+				const productIds = foundProductData.map(item => {
 					return item.id;
 				});
 
-				console.log(productIds.length);
+				// console.log(productIds.length);
 
-				const productPurchasedQties = foundProductIds.map(item => {
+				const productPurchasedQties = foundProductData.map(item => {
 					return item.purchasedQty;
 				});
 

@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import * as auth from '../middlewares/auth.js';
+import sendEmail from '../utils/sendEmail.js';
 import crypto from 'crypto';
 import chalk from 'chalk';
 
@@ -174,13 +175,29 @@ export const forgotPassword = async (req, res) => {
 
 		await user.save();
 
-		const message = `Hello ${user.firstName}, please user the above reset token to reset your password.`;
+		// const message = `Hello ${user.firstName}, please use the above reset token to reset your password.`;
+
+		const message = `
+		<h1>Hello ${user.firstName},</h1>
+		<p>Please use the below reset token to reset your password.</p>
+		<p> ${resetToken} </p>
+	`;
 
 		try {
-			return res.send({
-				token: resetToken,
-				message: message,
+			sendEmail({
+				to: user.email,
+				subject: 'Password Reset Request',
+				text: message,
 			});
+
+			return res.send({
+				success: true,
+				message: `Hello ${user.firstName}, please check your email to reset your password.`,
+			});
+			// return res.send({
+			// 	token: resetToken,
+			// 	message: message,
+			// });
 		} catch (err) {
 			user.resetPasswordToken = undefined;
 			user.resetPasswordExpire = undefined;

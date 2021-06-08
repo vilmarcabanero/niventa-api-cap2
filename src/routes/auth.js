@@ -28,7 +28,7 @@ router.post(
 	adminUser.login
 );
 
-router.post('/forgotpassword', auth.forgotPassword);
+router.post('/forgotpassword',  auth.forgotPassword);
 router.put('/resetpassword/:resetToken', auth.resetPassword);
 
 router.put('/setadmin/:id', mAuth.verify, mAuth.verifyAdmin, auth.setAdmin);

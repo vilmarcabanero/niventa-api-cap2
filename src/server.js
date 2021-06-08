@@ -2,6 +2,7 @@ import express from 'express';
 import connectDB from './config/db.js';
 import env from 'dotenv';
 import cors from 'cors';
+import nodemailer from 'nodemailer';
 
 import authRoutes from './routes/auth.js';
 import adminAuthRoutes from './routes/admin/auth.js';
