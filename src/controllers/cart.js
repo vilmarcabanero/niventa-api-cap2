@@ -11,7 +11,7 @@ export const checkout = async (req, res) => {
 					});
 				}
 
-        if (!user.carts.length) {
+				if (!user.carts.length) {
 					return res.send({
 						message: `Hello ${req.user.firstName}, your cart is empty, please add some items to your cart to proceed to checkout.`,
 					});
@@ -30,8 +30,6 @@ export const checkout = async (req, res) => {
 						}
 					});
 				});
-
-        
 
 				// console.log(cartNope);
 
@@ -118,10 +116,10 @@ export const checkout = async (req, res) => {
 	}
 };
 
-export const addToCart = async (req, res) => {
+export const addCart = async (req, res) => {
 	try {
 		await User.findById(req.user.id)
-			.then(user => {
+			.then(async user => {
 				if (user.isAdmin) {
 					return res.status(401).send({
 						message: `Only non-admin users can create an order.`,
@@ -145,13 +143,15 @@ export const addToCart = async (req, res) => {
 					return item.purchasedQty;
 				});
 
-				const newCart = {
+				let newCart = {
 					addedOn: '',
 					totalItems: 0,
 					totalAmount: 0,
 					items: [],
 				};
 				let totalAmount = 0;
+
+				let productCount = 0;
 
 				const options = {
 					weekday: 'long',
@@ -162,14 +162,15 @@ export const addToCart = async (req, res) => {
 				const today = new Date();
 				newCart.addedOn = today.toLocaleDateString('en-US', options);
 
-				productIds.forEach((productId, index) => {
-					Product.findById(productId)
+				productIds.forEach(async (productId, index) => {
+					await Product.findById(productId)
 						.then(async product => {
 							const itemPrice = product.price;
 							const purchasedQty = productPurchasedQties[index];
 							const subTotal = itemPrice * purchasedQty;
 
 							totalAmount += subTotal;
+							productCount++;
 
 							if (purchasedQty > product.quantity) {
 								return res.status(400).send({
@@ -190,7 +191,7 @@ export const addToCart = async (req, res) => {
 								await product.save();
 							}
 
-							const addedProduct = {
+							let addedProduct = {
 								productId: product._id,
 								productName: product.name,
 								productPrice: product.price,
@@ -201,11 +202,14 @@ export const addToCart = async (req, res) => {
 								customer: req.user.username,
 							};
 
+							console.log(addedProduct, 'Added product: ', index + 1);
+
 							newCart.items.push(addedProduct);
 							newCart.totalAmount = totalAmount;
 							newCart.totalItems = newCart.items.length;
 
-							if (index === productIds.length - 1) {
+							if (productCount === productIds.length) {
+								console.log(newCart.items.length, 'newCart.items length');
 								user.carts.push(newCart);
 								await user.save();
 
@@ -345,8 +349,9 @@ export const clearCart = async (req, res) => {
 				const originalQties = [];
 				const productIds = [];
 				const oldCart = {
-					totalAmount: 0,
 					addedOn: '',
+					totalItems: 0,
+					totalAmount: 0,
 					items: [],
 				};
 				// const cartItems = [];
@@ -364,6 +369,7 @@ export const clearCart = async (req, res) => {
 
 				oldCart.addedOn = user.carts[0].addedOn;
 				oldCart.totalAmount = totalAmount;
+				oldCart.totalItems = oldCart.items.length;
 
 				productIds.forEach((productId, productIdIndex) => {
 					Product.findById(productId)
@@ -412,16 +418,16 @@ export const getCartItems = async (req, res) => {
 			.then(user => {
 				// console.log(user.orders);
 
-				console.log(user.cartItems);
-
 				let cart = {};
+				let totalItems = 0;
 
-				const cartSummary = user.carts.map((cart, index) => {
+				const cartSummary = user.carts.map(cart => {
 					const totalAmount = cart.totalAmount;
 
-					const item = cart.items.map((item, index) => {
+					const item = cart.items.map((item, itemIndex) => {
+						totalItems++;
 						return {
-							item: index + 1,
+							item: itemIndex + 1,
 							details: {
 								name: item.productName,
 								price: item.productPrice,
@@ -433,6 +439,7 @@ export const getCartItems = async (req, res) => {
 					});
 					return {
 						addedOn: cart.addedOn,
+						totalItems: totalItems,
 						totalAmount: totalAmount,
 						items: item,
 					};
@@ -460,7 +467,7 @@ export const getCartItems = async (req, res) => {
 	}
 };
 
-export const getOrderHistory = (req, res) => {
+export const getCheckoutHistory = (req, res) => {
 	try {
 		const allOrders = [];
 		let totalOrders = 0;
@@ -489,10 +496,7 @@ export const getOrderHistory = (req, res) => {
 				}
 
 				totalOrders = 0;
-				return;
-			})
-			.then(() => {
-				res.send({
+				return res.send({
 					message: `Hi ${req.user.firstName}, here is the history of your placed orders.`,
 					details: allOrders,
 				});
@@ -503,7 +507,7 @@ export const getOrderHistory = (req, res) => {
 	}
 };
 
-export const clearOrderHistory = (req, res) => {
+export const clearCheckoutHistory = (req, res) => {
 	try {
 		User.findOne({ username: req.user.username })
 			.then(user => {

@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import * as auth from '../middlewares/auth.js';
 import crypto from 'crypto';
+import chalk from 'chalk';
 
 export const register = (req, res) => {
 	try {
@@ -94,10 +95,10 @@ export const login = (req, res) => {
 				}
 			})
 			.catch(err => {
-				console.log(err);
+				console.log(chalk.red(err.message), err);
 			});
 	} catch (err) {
-		console.log(err);
+		console.log(chalk.red(err.message), err);
 	}
 };
 
