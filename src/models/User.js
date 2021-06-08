@@ -40,7 +40,7 @@ const UserSchema = new mongoose.Schema(
 					type: Number,
 					required: true,
 				},
-				purchasedOn: {
+				addedOn: {
 					type: String,
 					// default: new Date(),
 				},

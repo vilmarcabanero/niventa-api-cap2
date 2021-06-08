@@ -25,7 +25,7 @@ export const createOrder = async (req, res) => {
 				const newOrder = {
 					totalAmount: 0,
 					totalItems: 0,
-					purchasedOn: '',
+					addedOn: '',
 					items: [],
 				};
 				let totalAmount = 0;
@@ -38,7 +38,7 @@ export const createOrder = async (req, res) => {
 				};
 				const today = new Date();
 				console.log(today.toLocaleDateString('en-US', options)); // Saturday, September 17, 2016
-				newOrder.purchasedOn = today.toLocaleDateString('en-US', options);
+				newOrder.addedOn = today.toLocaleDateString('en-US', options);
 
 				productIds.forEach((productId, index) => {
 					Product.findById(productId)

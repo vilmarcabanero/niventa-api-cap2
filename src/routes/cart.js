@@ -4,7 +4,7 @@ import * as c from '../controllers/cart.js';
 import * as mAuth from '../middlewares/auth.js';
 
 router.get('/get', mAuth.verify, c.getCartItems)
-router.get('/get/orderhistory', mAuth.verify, c.getCheckoutHistory)
+router.get('/get/checkouthistory', mAuth.verify, c.getCheckoutHistory)
 router.post('/checkout', mAuth.verify, c.checkout);
 router.post('/add', mAuth.verify, c.addCart);
 router.put('/update', mAuth.verify, c.updateCart);

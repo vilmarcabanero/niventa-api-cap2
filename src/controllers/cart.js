@@ -4,7 +4,7 @@ import Product from '../models/Product.js';
 export const checkout = async (req, res) => {
 	try {
 		await User.findById(req.user.id)
-			.then(user => {
+			.then(async user => {
 				if (user.isAdmin) {
 					return res.status(401).send({
 						message: `Only non-admin users can create an order.`,
@@ -17,95 +17,51 @@ export const checkout = async (req, res) => {
 					});
 				}
 
-				user.orders.forEach(order => {
-					// console.log(cart);
-					order.items.forEach(item => {
-						productIdCart.push(item.productId);
-					});
+				user.orders.push(user.carts[0]);
+				await user.save();
 
-					productIds.forEach((productId, productIdIndex) => {
-						if (productIdCart.includes(productId)) {
-							// console.log(productId, true, productIdIndex + 1);
-							includes = true;
-						}
+				let cart = {};
+				let totalItems = 0;
+
+				const cartSummary = user.carts.map(cart => {
+					const totalAmount = cart.totalAmount;
+
+					const item = cart.items.map((item, itemIndex) => {
+						totalItems++;
+						return {
+							item: itemIndex + 1,
+							details: {
+								name: item.productName,
+								price: item.productPrice,
+								purchasedQty: item.purchasedQty,
+								subTotal: item.subTotal,
+								seller: item.seller,
+							},
+						};
 					});
+					return {
+						addedOn: cart.addedOn,
+						totalItems: totalItems,
+						totalAmount: totalAmount,
+						items: item,
+					};
 				});
 
-				// console.log(cartNope);
+				const itemTotal = cartSummary.length;
+				cart = cartSummary[0];
 
-				productIdCart = [...new Set(productIdCart)];
-				console.log(productIdCart);
+				if (!itemTotal) {
+					return res.status(400).send({
+						message: `Hello ${req.user.firstName}, your cart is empty, please proceed to add to cart route to add new items.`,
+					});
+				}
 
-				return res.send(includes);
+				user.carts = [];
+				await user.save();
 
-				console.log(productIds.length);
-
-				const productPurchasedQties = foundProductIds.map(item => {
-					return item.purchasedQty;
-				});
-
-				const newOrder = {
-					totalAmount: 0,
-					totalItems: 0,
-					items: [],
-				};
-				let totalAmount = 0;
-
-				productIds.forEach((productId, index) => {
-					Product.findById(productId)
-						.then(async product => {
-							const itemPrice = product.price;
-							const purchasedQty = productPurchasedQties[index];
-							const subTotal = itemPrice * purchasedQty;
-
-							totalAmount += subTotal;
-
-							if (purchasedQty > product.quantity) {
-								return res.status(400).send({
-									message: `Not enough stocks. You order ${purchasedQty} ${
-										product.quantity <= 1 ? 'piece' : 'pieces'
-									} but the current stock has ${product.quantity} ${
-										product.quantity <= 1 ? 'piece' : 'pieces'
-									}.`,
-								});
-							}
-
-							const orderedProduct = {
-								productId: product._id,
-								productName: product.name,
-								productPrice: product.price,
-								purchasedQty: purchasedQty,
-								subTotal: subTotal,
-								seller: product.seller,
-								customer: req.user.username,
-							};
-
-							newOrder.items.push(orderedProduct);
-							newOrder.totalAmount = totalAmount;
-							newOrder.totalItems = newOrder.items.length;
-
-							product.quantity -= purchasedQty;
-
-							if (product.quantity > 0) {
-								await product.save();
-							} else {
-								product.isActive = false;
-								await product.save();
-							}
-
-							if (index === productIds.length - 1) {
-								user.orders.push(newOrder);
-								await user.save();
-
-								return res.send({
-									message: `Hi ${req.user.firstName}, you created an order successfully.`,
-									details: newOrder,
-								});
-							}
-						})
-						.catch(err => {
-							console.log(err);
-						});
+				return res.send({
+					message: `Hi ${req.user.firstName}, you placed your order successfully.`,
+					summary: cart,
 				});
 			})
 			.catch(err => {
@@ -456,7 +412,7 @@ export const getCartItems = async (req, res) => {
 
 				if (!itemTotal) {
 					return res.status(400).send({
-						message: `Hello ${req.user.firstName}, your cart is empty, please proceed to add to cart route to add new items.`,
+						message: `Hello ${req.user.firstName}, your cart is empty, please consider adding some items to your cart.`,
 					});
 				}
 
@@ -485,27 +441,65 @@ export const getCheckoutHistory = (req, res) => {
 					});
 				}
 
-				const order = user.orders.map((order, orderIndex) => {
+				// const order = user.orders.map((order, orderIndex) => {
+				// 	totalOrders++;
+				// 	return {
+				// 		order: orderIndex + 1,
+				// 		details: order,
+				// 	};
+				// });
+
+				const orderSummary = user.orders.map((order, index) => {
+					const totalAmount = order.totalAmount;
+
+					const item = order.items.map((item, index) => {
+						return {
+							item: index + 1,
+							details: {
+								name: item.productName,
+								price: item.productPrice,
+								purchasedQty: item.purchasedQty,
+								subTotal: item.subTotal,
+								seller: item.seller,
+							},
+						};
+					});
 					return {
-						order: orderIndex + 1,
-						details: order,
+						order: index + 1,
+						purchasedOn: order.purchasedOn,
+						totalAmount: totalAmount,
+						products: item,
 					};
 				});
 
-				console.log(order);
+				const orderTotal = orderSummary.length;
 
-				if (user.orders.length !== 0) {
-					allOrders.push({
-						totalOrders: totalOrders,
-						orderDetails: order,
-					});
-				}
+				// console.log(orderSummary);
 
-				totalOrders = 0;
+				const details = {
+					totalOrders: orderTotal,
+					details: orderSummary,
+				};
+
 				return res.send({
 					message: `Hi ${req.user.firstName}, here is the history of your placed orders.`,
-					details: allOrders,
+					summary: details,
 				});
+
+				// console.log(order);
+
+				// if (user.orders.length !== 0) {
+				// 	allOrders.push({
+				// 		totalOrders: totalOrders,
+				// 		orderDetails: order,
+				// 	});
+				// }
+
+				// totalOrders = 0;
+				// return res.send({
+				// 	message: `Hi ${req.user.firstName}, here is the history of your placed orders.`,
+				// 	details: allOrders,
+				// });
 			})
 			.catch(err => console.log(err));
 	} catch (err) {
