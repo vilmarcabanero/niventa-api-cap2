@@ -107,8 +107,6 @@ export const addCart = async (req, res) => {
 				};
 				let totalAmount = 0;
 
-				let productCount = 0;
-
 				const options = {
 					weekday: 'long',
 					year: 'numeric',
@@ -197,7 +195,7 @@ export const addCart = async (req, res) => {
 export const updateCart = async (req, res) => {
 	try {
 		await User.findById(req.user.id)
-			.then(user => {
+			.then(async user => {
 				if (user.isAdmin) {
 					return res.status(401).send({
 						message: `Only non-admin users can create an order.`,
@@ -205,44 +203,92 @@ export const updateCart = async (req, res) => {
 				}
 
 				if (!user.carts.length) {
-					return res.status(400).send({
-						message: `Hello ${req.user.firstName}, your cart is empty, please proceed to add to cart route to add new items.`,
+					return res.send({
+						message: `Hello ${req.user.firstName}, your cart is empty, please consider adding items to your cart.`,
 					});
 				}
 
-				if (user.carts.length) {
-					return res.send({
-						message: 'Successfully updated items of your cart.',
-					});
-				}
+				//Clear cart
+
+				const originalQties = [];
+				const oldProductIds = [];
+				const oldCart = {
+					addedOn: '',
+					totalItems: 0,
+					totalAmount: 0,
+					items: [],
+				};
+				// const cartItems = [];
+
+				let totalAmount = 0;
+
+				user.carts[0].items.forEach(item => {
+					// console.log(item);
+					totalAmount += item.subTotal;
+
+					oldCart.items.push(item);
+					oldProductIds.push(item.productId);
+					originalQties.push(item.purchasedQty + item.remainingQty);
+				});
+
+				oldCart.addedOn = user.carts[0].addedOn;
+				oldCart.totalAmount = totalAmount;
+				oldCart.totalItems = oldCart.items.length;
+
+				oldProductIds.forEach((productId, productIdIndex) => {
+					Product.findById(productId)
+						.then(async product => {
+							product.quantity = originalQties[productIdIndex];
+
+							await product.save();
+						})
+						.catch(err => console.log(err));
+				});
+
+				user.carts = [];
+				await user.save();
+				//Clear cart
 
 				const foundProductIds = req.body;
 				const productIds = foundProductIds.map(item => {
 					return item.id;
 				});
 
-				console.log(productIds.length);
+				// console.log(productIds.length);
 
 				const productPurchasedQties = foundProductIds.map(item => {
 					return item.purchasedQty;
 				});
 
 				const newCart = {
-					totalAmount: 0,
+					addedOn: '',
 					totalItems: 0,
+					totalAmount: 0,
 					items: [],
 				};
-				let totalAmount = 0;
+				totalAmount = 0;
 
-				productIds.forEach((productId, index) => {
-					Product.findById(productId)
+				const options = {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+				};
+				const today = new Date();
+				newCart.addedOn = today.toLocaleDateString('en-US', options);
+
+				// console.log(newCart);
+
+				productIds.forEach(async (productId, index) => {
+					// productCount++;
+					// console.log(productCount, 'product count');
+					await Product.findById(productId)
 						.then(async product => {
 							const itemPrice = product.price;
 							const purchasedQty = productPurchasedQties[index];
 							const subTotal = itemPrice * purchasedQty;
 
 							totalAmount += subTotal;
-
 							if (purchasedQty > product.quantity) {
 								return res.status(400).send({
 									message: `Not enough stocks. You added ${purchasedQty} ${
@@ -253,26 +299,41 @@ export const updateCart = async (req, res) => {
 								});
 							}
 
-							const addedProduct = {
+							product.quantity -= purchasedQty;
+
+							if (product.quantity > 0) {
+								await product.save();
+							} else {
+								product.isActive = false;
+								await product.save();
+							}
+
+							let addedProduct = {
 								productId: product._id,
 								productName: product.name,
 								productPrice: product.price,
 								purchasedQty: purchasedQty,
+								remainingQty: product.quantity,
 								subTotal: subTotal,
 								seller: product.seller,
 								customer: req.user.username,
 							};
 
+							// console.log(index + 1, 'index');
+							// console.log(productCount, 'Product count');
+							// console.log(productIds[index].length, 'productId.length');
+
 							newCart.items.push(addedProduct);
 							newCart.totalAmount = totalAmount;
 							newCart.totalItems = newCart.items.length;
 
-							if (index === productIds.length - 1) {
-								user.orders.push(newCart);
+							if (newCart.items.length === productIds.length) {
+								user.carts.push(newCart);
 								await user.save();
+								console.log('Success');
 
 								return res.send({
-									message: `Hi ${req.user.firstName}, you've successfully added items to your cart.`,
+									message: `Hi ${req.user.firstName}, you've successfully updated the items of your cart. Below are the updated items.`,
 									details: newCart,
 								});
 							}
@@ -280,11 +341,13 @@ export const updateCart = async (req, res) => {
 						.catch(err => {
 							console.log(err);
 						});
+
+					// console.log('Success')
 				});
+
+				// console.log(newCart);
 			})
-			.catch(err => {
-				console.log(err);
-			});
+			.catch(err => console.log(err));
 	} catch (err) {
 		console.log(err);
 	}
