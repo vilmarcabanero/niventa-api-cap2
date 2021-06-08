@@ -12,15 +12,15 @@ export const createOrder = async (req, res) => {
 				}
 
 				const foundProductData = req.body;
-				const productIds = foundProductData.map(item => {
-					return item.id;
-				});
+				// const productIds = foundProductData.map(item => {
+				// 	return item.id;
+				// });
 
 				// console.log(productIds.length);
 
-				const productPurchasedQties = foundProductData.map(item => {
-					return item.purchasedQty;
-				});
+				// const productPurchasedQties = foundProductData.map(item => {
+				// 	return item.purchasedQty;
+				// });
 
 				const newOrder = {
 					totalAmount: 0,
@@ -28,6 +28,7 @@ export const createOrder = async (req, res) => {
 					addedOn: '',
 					items: [],
 				};
+
 				let totalAmount = 0;
 
 				const options = {
@@ -40,13 +41,13 @@ export const createOrder = async (req, res) => {
 				console.log(today.toLocaleDateString('en-US', options)); // Saturday, September 17, 2016
 				newOrder.addedOn = today.toLocaleDateString('en-US', options);
 
-				productIds.forEach((productId, index) => {
-					Product.findById(productId)
+				foundProductData.forEach(item => {
+					Product.findById(item.id)
 						.then(async product => {
 							const itemPrice = product.price;
-							const purchasedQty = productPurchasedQties[index];
+							const purchasedQty = item.purchasedQty;
 							const subTotal = itemPrice * purchasedQty;
-
+							
 							totalAmount += subTotal;
 
 							if (purchasedQty > product.quantity) {
@@ -83,7 +84,7 @@ export const createOrder = async (req, res) => {
 							newOrder.totalAmount = totalAmount;
 							newOrder.totalItems = newOrder.items.length;
 
-							if (newOrder.items.length === productIds.length) {
+							if (newOrder.items.length === foundProductData.length) {
 								user.orders.push(newOrder);
 								await user.save();
 
