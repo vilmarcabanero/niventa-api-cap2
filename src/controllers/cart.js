@@ -143,7 +143,7 @@ export const addCart = async (req, res) => {
 					return item.purchasedQty;
 				});
 
-				let newCart = {
+				const newCart = {
 					addedOn: '',
 					totalItems: 0,
 					totalAmount: 0,
@@ -162,7 +162,11 @@ export const addCart = async (req, res) => {
 				const today = new Date();
 				newCart.addedOn = today.toLocaleDateString('en-US', options);
 
-				productIds.forEach(async (productId, index) => {
+				// console.log(newCart);
+
+				await productIds.forEach(async (productId, index) => {
+					// productCount++;
+					// console.log(productCount, 'product count');
 					await Product.findById(productId)
 						.then(async product => {
 							const itemPrice = product.price;
@@ -170,8 +174,6 @@ export const addCart = async (req, res) => {
 							const subTotal = itemPrice * purchasedQty;
 
 							totalAmount += subTotal;
-							productCount++;
-
 							if (purchasedQty > product.quantity) {
 								return res.status(400).send({
 									message: `Not enough stocks. You added ${purchasedQty} ${
@@ -202,16 +204,18 @@ export const addCart = async (req, res) => {
 								customer: req.user.username,
 							};
 
-							console.log(addedProduct, 'Added product: ', index + 1);
+							// console.log(index + 1, 'index');
+							// console.log(productCount, 'Product count');
+							// console.log(productIds[index].length, 'productId.length');
 
 							newCart.items.push(addedProduct);
 							newCart.totalAmount = totalAmount;
 							newCart.totalItems = newCart.items.length;
 
-							if (productCount === productIds.length) {
-								console.log(newCart.items.length, 'newCart.items length');
+							if (newCart.items.length === productIds.length) {
 								user.carts.push(newCart);
 								await user.save();
+								console.log('Success');
 
 								return res.send({
 									message: `Hi ${req.user.firstName}, you've successfully added items to your cart.`,
@@ -222,11 +226,13 @@ export const addCart = async (req, res) => {
 						.catch(err => {
 							console.log(err);
 						});
+
+					// console.log('Success')
 				});
+
+				// console.log(newCart);
 			})
-			.catch(err => {
-				console.log(err);
-			});
+			.catch(err => console.log(err));
 	} catch (err) {
 		console.log(err);
 	}
