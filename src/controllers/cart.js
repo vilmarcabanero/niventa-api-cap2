@@ -204,13 +204,13 @@ export const updateCart = async (req, res) => {
 					});
 				}
 
-				if (!user.orders.length) {
+				if (!user.carts.length) {
 					return res.status(400).send({
-						message: `Your cart is empty, please proceed to add to cart route to add new items.`,
+						message: `Hello ${req.user.firstName}, your cart is empty, please proceed to add to cart route to add new items.`,
 					});
 				}
 
-				if (user.orders.length) {
+				if (user.carts.length) {
 					return res.send({
 						message: 'Successfully updated items of your cart.',
 					});
@@ -511,6 +511,12 @@ export const clearCheckoutHistory = (req, res) => {
 	try {
 		User.findOne({ username: req.user.username })
 			.then(user => {
+				if (!user.orders.length) {
+					return res.send({
+						message: `Hi ${req.user.firstName}, the history of your orders is currently empty.`,
+					});
+				}
+
 				user.orders = [];
 				user.save();
 			})

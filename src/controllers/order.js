@@ -83,7 +83,7 @@ export const createOrder = async (req, res) => {
 							newOrder.totalAmount = totalAmount;
 							newOrder.totalItems = newOrder.items.length;
 
-							if (index === productIds.length - 1) {
+							if (newOrder.items.length === productIds.length) {
 								user.orders.push(newOrder);
 								await user.save();
 
@@ -112,10 +112,10 @@ export const getMyOrders = (req, res) => {
 			.then(user => {
 				// console.log(user.orders);
 
-				if(!user.orders.length) {
+				if (!user.orders.length) {
 					return res.send({
-						message: `Hi ${req.user.firstName}, the history of your orders is currently empty.`
-					})
+						message: `Hi ${req.user.firstName}, the history of your orders is currently empty.`,
+					});
 				}
 
 				const orderSummary = user.orders.map((order, index) => {
@@ -202,7 +202,7 @@ export const getAllOrdersForSeller = (req, res) => {
 			.then(() => {
 				if (!filteredOrders.length) {
 					return res.send({
-						message: `Hi ${req.user.firstName}, you currently have no customers who created an order.`,
+						message: `Hi ${req.user.firstName}, you either currently have no customers who created an order or they cleared their checkout history.`,
 					});
 				}
 
@@ -317,6 +317,12 @@ export const getOrdersByCustomer = (req, res) => {
 
 		User.findOne({ username: req.params.username })
 			.then(user => {
+				if (!user) {
+					return res.send({
+						message: `Hello ${req.user.firstName}, ${req.params.username} is not yet registered.`,
+					});
+				}
+
 				const customer = user.fullName;
 				user.orders.forEach(order => {
 					const filteredItems = order.items.filter(
@@ -353,7 +359,7 @@ export const getOrdersByCustomer = (req, res) => {
 			.then(user => {
 				if (!filteredOrders.length) {
 					return res.send({
-						message: `Hi ${req.user.firstName}, ${user.fullName} has no orders yet.`,
+						message: `Hi ${req.user.firstName}, ${user.fullName} has either not ordered yet or cleared the checkout history.`,
 					});
 				}
 
