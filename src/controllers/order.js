@@ -5,7 +5,7 @@ export const createOrder = async (req, res) => {
 	try {
 		await User.findById(req.user.id)
 			.then(user => {
-				if (user.isAdmin) {
+				if (req.user.isAdmin) {
 					return res.status(401).send({
 						message: `Only non-admin users can create an order.`,
 					});
