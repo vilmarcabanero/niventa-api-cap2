@@ -4,7 +4,7 @@ const sendEmail = options => {
 	const transporter = nodemailer.createTransport({
 		service: process.env.EMAIL_SERVICE,
 		auth: {
-			user: process.env.EMAIL_FROM,
+			user: process.env.EMAIL_USERNAME,
 			pass: process.env.EMAIL_PASSWORD,
 		},
 		tls: {
@@ -21,9 +21,9 @@ const sendEmail = options => {
 
 	transporter.sendMail(mailOptions, (err, info) => {
 		if (err) {
-			console.log('Error: ', chalk.bold.red(err.message));
+			console.log('Error: ', err.message);
 		} else {
-			console.log(chalk.bold.green('Email sent!'), info);
+			console.log('Email sent!', info);
 		}
 	});
 };
